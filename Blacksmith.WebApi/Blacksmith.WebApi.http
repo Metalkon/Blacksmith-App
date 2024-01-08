@@ -1,0 +1,6 @@
+@Blacksmith.WebApi_HostAddress = http://localhost:5240
+
+GET {{Blacksmith.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

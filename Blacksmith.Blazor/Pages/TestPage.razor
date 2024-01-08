@@ -1,0 +1,27 @@
+﻿@page "/testpage"
+@inject HttpClient client
+
+<PageTitle>Test Page</PageTitle>
+
+<div>
+    <div><b>Enter Message:</b></div>
+    <input type="text" style="width: 10%;" @bind="test1.TestProperty">
+    <button class="btn btn-primary" @onclick="@(() => SendMessage())">Send</button>
+</div>
+<div>
+    Response: @test2.TestProperty <br /> <br />
+</div>
+
+@code {
+    private TestClass test1 = new TestClass();
+    private TestClass test2 = new TestClass();
+
+    private async Task SendMessage()
+    {
+        HttpResponseMessage response = await client.PostAsJsonAsync($"https://localhost:7000/api/Test/TestClass", test1);
+        if (response.IsSuccessStatusCode)
+        {
+            test2 = await response.Content.ReadFromJsonAsync<TestClass>();
+        }
+    }
+}
