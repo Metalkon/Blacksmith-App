@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Blacksmith.WebApi.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Controllers
@@ -8,18 +10,26 @@ namespace Blacksmith.WebApi.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        [HttpPost("TestClass")]
-        public async Task<ActionResult<TestClass>> TestClass(TestClass test)
+        private readonly ApplicationDbContext _db;
+
+        public TestController(ApplicationDbContext context)
+        {
+            _db = context;
+        }
+
+        [HttpGet("PotatoName")]
+        public async Task<ActionResult<TestPotato>> PotatoName(string input)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            TestClass response = new TestClass()
+            TestPotato findPotato = await _db.TestPotatoes.FirstOrDefaultAsync(x => x.Name.Contains(input));
+            if (findPotato == null)
             {
-                TestProperty = $"Hello World, {test.TestProperty}"
-            };                
-            return Ok(response);
+                return NotFound();
+            }             
+            return Ok(findPotato);
         }
     }
 }

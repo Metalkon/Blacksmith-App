@@ -4,24 +4,39 @@
 <PageTitle>Test Page</PageTitle>
 
 <div>
-    <div><b>Enter Message:</b></div>
-    <input type="text" style="width: 10%;" @bind="test1.TestProperty">
-    <button class="btn btn-primary" @onclick="@(() => SendMessage())">Send</button>
+    <div><b>Enter Potato Name:</b></div>
+    <input type="text" style="width: 25%;" @bind="input">
+    <button class="btn btn-primary" @onclick="@(() => SendRequest())">Send</button>
 </div>
 <div>
-    Response: @test2.TestProperty <br /> <br />
+    @message
 </div>
 
 @code {
-    private TestClass test1 = new TestClass();
-    private TestClass test2 = new TestClass();
+    private TestPotato testPotato = new TestPotato();
+    private string input;
+    private string message = "Hmm...";
 
-    private async Task SendMessage()
+    private async Task SendRequest()
     {
-        HttpResponseMessage response = await client.PostAsJsonAsync($"https://localhost:7000/api/Test/TestClass", test1);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            test2 = await response.Content.ReadFromJsonAsync<TestClass>();
+            TestPotato response = await client.GetFromJsonAsync<TestPotato>($"https://localhost:8000/api/Test/PotatoName?input={input}");
+            if (response != null)
+            {
+                message = $"We have a \"{response.Name}\" Potato";
+            }
+            else
+            {
+                message = $"Something went wrong";
+            }
         }
+        catch (Exception ex)
+        {
+            // Log or handle the exception as needed
+            message = $"An error occurred: {ex.Message}";
+        }
+        StateHasChanged();
     }
+
 }

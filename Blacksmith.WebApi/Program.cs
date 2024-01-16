@@ -1,3 +1,5 @@
+using Blacksmith.WebApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blacksmith.WebApi
 {
@@ -8,6 +10,11 @@ namespace Blacksmith.WebApi
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]);
+            });
 
             builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
             {
