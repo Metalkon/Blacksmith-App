@@ -28,7 +28,7 @@ namespace Blacksmith.WebApi.Controllers
             if (findPotato == null)
             {
                 return NotFound();
-            }             
+            }
             return Ok(findPotato);
         }
     }
