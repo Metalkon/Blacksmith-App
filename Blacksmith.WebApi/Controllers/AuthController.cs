@@ -49,17 +49,14 @@ namespace Blacksmith.WebApi.Controllers
                 }
                 if (user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-24)) > 3)
                 {
-                    return BadRequest("Exceeded the maximum number of login attempts today, please try again tomorrow.");
+                    DateTime thirdMostRecent = user.LoginCodeExp.OrderByDescending(x => x).Skip(2).FirstOrDefault();
+                    TimeSpan remainingTime = thirdMostRecent.AddHours(24) - DateTime.UtcNow;
+                    return BadRequest($"Exceeded the maximum login attempts. Please wait and retry in: {remainingTime}");
                 }
                 if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow.AddMinutes(-15))
                 {
                     return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
                 }
-
-
-
-
-
 
                 user.LoginCode = Guid.NewGuid().ToString();
                 user.LoginCodeExp.Add(DateTime.UtcNow);
