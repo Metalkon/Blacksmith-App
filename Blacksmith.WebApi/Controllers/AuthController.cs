@@ -1,0 +1,289 @@
+﻿using Blacksmith.WebApi.Data;
+using Blacksmith.WebApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Shared_Classes.Models;
+using Blacksmith.WebApi.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace Blacksmith.WebApi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        private readonly ApplicationDbContext _db;
+        private IConfiguration _config;
+        private readonly IEmailSender _emailSender;
+
+        // Allowed time to login/register before code/url expires
+        private int registerTime = 15;
+
+        public AuthController(ApplicationDbContext context, IConfiguration config, IEmailSender emailSender)
+        {
+            _db = context;  
+            _config = config;
+            _emailSender = emailSender;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login(UserDTO loginRequest)
+        {
+            try
+            {
+                if (!ModelState.IsValid || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Username))
+                {
+                    return BadRequest("Invalid Email or Username");
+                }
+
+                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
+                if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus != "Validated")
+                {
+                    return NotFound("User Not Found or Invalid Account Status");
+                }
+                if (user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-24)) > 3)
+                {
+                    return BadRequest("Exceeded the maximum number of login attempts today, please try again tomorrow.");
+                }
+                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow.AddMinutes(-15))
+                {
+                    return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
+                }
+
+
+
+
+
+
+                user.LoginCode = Guid.NewGuid().ToString();
+                user.LoginCodeExp.Add(DateTime.UtcNow);
+                await _db.SaveChangesAsync();
+                await SendEmailLogin(user);
+
+                return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
+            }
+
+        }
+
+
+
+
+
+
+
+        // OLD OUTDATED CODE BELOW
+
+
+
+
+
+
+
+
+
+
+
+
+        // Complete user login
+        [AllowAnonymous]
+        [HttpPost("login/confirmation")]
+        public async Task<ActionResult<TokenDTO>> LoginConfirmation(UserConfirmDTO userConfirm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
+            if (user.LoginCodeExp <= DateTime.UtcNow)
+            {
+                return BadRequest("Your login code has expired, please try again");
+            }
+            // If user information matches with the database, return jwt to login the user.
+            if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+            {
+                await _db.SaveChangesAsync();
+                RefreshToken newRefreshToken = await GenerateRefreshToken(user);
+                var tokenDTO = new TokenDTO()
+                {
+                    RefreshToken = newRefreshToken.Token,
+                    Jwt = await GenerateJwt(user)
+                };
+                return tokenDTO;
+            }
+            else
+            {
+                return BadRequest("Invalid Login Data");
+            }
+        }
+
+        // Handle user registration and send confirmation email
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<ActionResult<string>> Register(UserDTO userRegister)
+        {
+            if (!ModelState.IsValid || userRegister == null || string.IsNullOrEmpty(userRegister.Username) || string.IsNullOrEmpty(userRegister.Email))
+            {
+                return BadRequest("Invalid Email or Username");
+            }
+            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userRegister.Email.ToLower());
+
+            // Generate/Update database entry if the user doesn't exist or is unconfirmed
+            if (user == null || user.AccountStatus != "Validated")
+            {
+                if (user != null && user.LoginCodeExp <= DateTime.UtcNow)
+                {
+                    return BadRequest($"You are unable to attempt to register again right now, please try again in {registerTime} minutes");
+                }
+                if (user == null)
+                {
+                    user = new UserModel()
+                    {
+                        Email = userRegister.Email,
+                        Username = userRegister.Username,
+                        Role = "None",
+                        LoginCode = Guid.NewGuid().ToString(),
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        LoginCodeExp = DateTime.UtcNow.AddMinutes(registerTime)
+                    };
+                    _db.Users.Add(user);
+                }
+                else
+                {
+                    user.Username = userRegister.Username;
+                    user.Role = "None";
+                    user.LoginCode = Guid.NewGuid().ToString();
+                    user.CreatedAt = DateTime.UtcNow;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    user.LoginCodeExp = DateTime.UtcNow.AddMinutes(registerTime);
+
+                }
+                await _db.SaveChangesAsync();
+                await SendEmailRegister(user);
+                return Ok($"A confirmation email has been sent to {user.Email}");
+            }
+            if (userRegister.Email == user.Email || userRegister.Username == user.Username)
+            {
+                return BadRequest("Email or Username Has Already Been Taken");
+            }
+            return BadRequest();
+        }
+
+        // Complete user registration
+        [AllowAnonymous]
+        [HttpPost("register/confirmation")]
+        public async Task<ActionResult<string>> RegisterConfirmation(UserConfirmDTO userConfirm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
+            if (user.LoginCodeExp <= DateTime.UtcNow)
+            {
+                return BadRequest("The time to confirm your email has expired, please try again");
+            }
+            // If user information matches with the database, validate account and login the user.
+            if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+            {
+                user.Role = "User";
+                user.AccountStatus = "Validated";
+                user.UpdatedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+                RefreshToken newRefreshToken = await GenerateRefreshToken(user);
+                var tokenDTO = new TokenDTO()
+                {
+                    RefreshToken = newRefreshToken.Token,
+                    Jwt = await GenerateJwt(user)
+                };
+                return Ok(tokenDTO);
+            }
+            else
+            {
+                return BadRequest("Invalid Confirmation Data");
+            }
+        }
+
+        // Confirm valid refresh token and then return a new jwt.
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        public async Task<ActionResult<string>> RefreshTokenConfirmation(TokenDTO refreshToken)
+        {
+            if (!ModelState.IsValid || string.IsNullOrEmpty(refreshToken.RefreshToken))
+            {
+                return BadRequest("Invalid Request");
+            }
+            RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken.RefreshToken);
+            if (savedToken == null)
+            {
+                return BadRequest("Invalid Token");
+            }
+            if (savedToken.TokenExp <= DateTime.Now)
+            {
+                return BadRequest("Expired Token");
+            }
+            string newJwt = await GenerateJwt(savedToken.User);
+            return Ok(newJwt);
+        }
+
+        // Generate a Refresh Token upon login or registration
+        private async Task<RefreshToken> GenerateRefreshToken(UserModel user)
+        {
+            var refreshToken = new RefreshToken
+            {
+                Token = Guid.NewGuid().ToString("N"),
+                TokenExp = DateTime.Now.AddDays(30),
+                User = user
+            };
+            _db.RefreshTokens.Add(refreshToken);
+            await _db.SaveChangesAsync();
+            return refreshToken;
+        }
+
+        // Generate a JWT for the provided user object
+        private async Task<string> GenerateJwt(UserModel user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            int expires = 15;
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+            var token = new JwtSecurityToken(
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expires),
+                signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private async Task SendEmailLogin(UserModel currentUser)
+        {
+            var subject = "Fantasy Web App - Login Verification Code";
+            var message = $"5 Minute Login URL: \n" +
+                $"https://localhost:7001/login/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+            var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+        }
+        private async Task SendEmailRegister(UserModel currentUser)
+        {
+            var subject = "Fantasy Web App - Comfirm Registration";
+            var message = $"5 Minute Registration URL: \n" +
+                $"https://localhost:7001/register/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+            var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+        }
+    }
+}

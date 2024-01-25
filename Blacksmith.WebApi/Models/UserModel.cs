@@ -22,13 +22,11 @@ namespace Blacksmith.WebApi.Models
         [Required]
         public string LoginCode { get; set; }
         [Required]
-        public DateTime LoginCodeExp { get; set; }
+        public List<DateTime> LoginCodeExp { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]
         public DateTime UpdatedAt { get; set; }
-
-        //public UserGameData GameData { get; set; }
 
         public UserModel()
         {
@@ -36,7 +34,7 @@ namespace Blacksmith.WebApi.Models
             AccountStatus = "Unconfirmed";
             LoginStatus = string.Empty;
             LoginCode = string.Empty;
-            LoginCodeExp = DateTime.UtcNow;
+            LoginCodeExp = new List<DateTime> { DateTime.UtcNow, DateTime.UtcNow.AddDays(400) };
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }

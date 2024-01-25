@@ -12,7 +12,6 @@ namespace Blacksmith.WebApi.Models
         public string Token { get; set; }
         [Required]
         public DateTime TokenExp { get; set; }
-        [ForeignKey("UserId")]
         public UserModel User { get; set; }
 
         public RefreshToken()
