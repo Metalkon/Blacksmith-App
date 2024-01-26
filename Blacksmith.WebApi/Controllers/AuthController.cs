@@ -101,10 +101,11 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest("Invalid Request");
             }
             UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            if (user.LoginCodeExp <= DateTime.UtcNow)
+            if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
             {
                 return BadRequest("Your login code has expired, please try again");
             }
+
             // If user information matches with the database, return jwt to login the user.
             if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
             {
@@ -137,10 +138,11 @@ namespace Blacksmith.WebApi.Controllers
             // Generate/Update database entry if the user doesn't exist or is unconfirmed
             if (user == null || user.AccountStatus != "Validated")
             {
-                if (user != null && user.LoginCodeExp <= DateTime.UtcNow)
+                if (user != null && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
                 {
                     return BadRequest($"You are unable to attempt to register again right now, please try again in {registerTime} minutes");
                 }
+
                 if (user == null)
                 {
                     user = new UserModel()
@@ -151,7 +153,7 @@ namespace Blacksmith.WebApi.Controllers
                         LoginCode = Guid.NewGuid().ToString(),
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
-                        LoginCodeExp = DateTime.UtcNow.AddMinutes(registerTime)
+                        LoginCodeExp = new List<DateTime> { DateTime.UtcNow.AddMinutes(registerTime) }
                     };
                     _db.Users.Add(user);
                 }
@@ -162,8 +164,7 @@ namespace Blacksmith.WebApi.Controllers
                     user.LoginCode = Guid.NewGuid().ToString();
                     user.CreatedAt = DateTime.UtcNow;
                     user.UpdatedAt = DateTime.UtcNow;
-                    user.LoginCodeExp = DateTime.UtcNow.AddMinutes(registerTime);
-
+                    user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(registerTime));
                 }
                 await _db.SaveChangesAsync();
                 await SendEmailRegister(user);
@@ -186,7 +187,7 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest("Invalid Request");
             }
             UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            if (user.LoginCodeExp <= DateTime.UtcNow)
+            if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
             {
                 return BadRequest("The time to confirm your email has expired, please try again");
             }
