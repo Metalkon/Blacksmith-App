@@ -69,10 +69,46 @@ namespace Blacksmith.WebApi.Controllers
             {
                 return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
-
         }
 
-
+        // Complete user login
+        [AllowAnonymous]
+        [HttpPost("login/confirmation")]
+        public async Task<ActionResult<TokenDTO>> LoginConfirmation(UserConfirmDTO userConfirm)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest("Invalid Request");
+                }
+                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+                if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+                {
+                    return BadRequest("Your login code has expired, please try to login again");
+                }
+                if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+                {
+                    user.LoginCode = Guid.NewGuid().ToString();
+                    await _db.SaveChangesAsync();
+                    RefreshToken newRefreshToken = await GenerateRefreshToken(user);
+                    var tokenDTO = new TokenDTO()
+                    {
+                        RefreshToken = newRefreshToken.Token,
+                        Jwt = await GenerateJwt(user)
+                    };
+                    return tokenDTO;
+                }
+                else
+                {
+                    return BadRequest("Invalid Login Data");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
+            }
+        }
 
 
 
@@ -91,38 +127,7 @@ namespace Blacksmith.WebApi.Controllers
 
 
 
-        // Complete user login
-        [AllowAnonymous]
-        [HttpPost("login/confirmation")]
-        public async Task<ActionResult<TokenDTO>> LoginConfirmation(UserConfirmDTO userConfirm)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Invalid Request");
-            }
-            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
-            {
-                return BadRequest("Your login code has expired, please try again");
-            }
 
-            // If user information matches with the database, return jwt to login the user.
-            if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
-            {
-                await _db.SaveChangesAsync();
-                RefreshToken newRefreshToken = await GenerateRefreshToken(user);
-                var tokenDTO = new TokenDTO()
-                {
-                    RefreshToken = newRefreshToken.Token,
-                    Jwt = await GenerateJwt(user)
-                };
-                return tokenDTO;
-            }
-            else
-            {
-                return BadRequest("Invalid Login Data");
-            }
-        }
 
         // Handle user registration and send confirmation email
         [AllowAnonymous]
