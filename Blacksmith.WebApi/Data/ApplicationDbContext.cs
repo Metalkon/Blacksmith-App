@@ -14,7 +14,6 @@ namespace Blacksmith.WebApi.Data
 
         public DbSet<UserModel> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-
         public DbSet<TestPotato> TestPotatoes { get; set; }
     }
 }
