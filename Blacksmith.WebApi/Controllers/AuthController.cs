@@ -66,15 +66,15 @@ namespace Blacksmith.WebApi.Controllers
                     TimeSpan remainingTime = thirdMostRecent.AddHours(24) - DateTime.UtcNow;
                     return BadRequest($"Exceeded the maximum login attempts. Please wait and retry in: {remainingTime}");
                 }
-                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow.AddMinutes(-15))
+                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow.AddMinutes(-1))
                 {
                     return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
                 }
 
                 user.LoginCode = Guid.NewGuid().ToString();
-                user.LoginCodeExp.Add(DateTime.UtcNow);
+                user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(15));
                 await _db.SaveChangesAsync();
-                //await SendEmailLogin(user);
+                await SendEmailLogin(user);
 
                 return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
             }
