@@ -110,77 +110,66 @@ namespace Blacksmith.WebApi.Controllers
             }
         }
 
-
-
-
-
-        // OLD OUTDATED CODE BELOW
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Handle user registration and send confirmation email
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register(UserDTO userRegister)
+        public async Task<ActionResult<string>> Register(UserDTO registerRequest)
         {
-            if (!ModelState.IsValid || userRegister == null || string.IsNullOrEmpty(userRegister.Username) || string.IsNullOrEmpty(userRegister.Email))
+            try
             {
-                return BadRequest("Invalid Email or Username");
-            }
-            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userRegister.Email.ToLower());
-
-            // Generate/Update database entry if the user doesn't exist or is unconfirmed
-            if (user == null || user.AccountStatus != "Validated")
-            {
-                if (user != null && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+                if (!ModelState.IsValid || registerRequest == null || string.IsNullOrEmpty(registerRequest.Username) || string.IsNullOrEmpty(registerRequest.Email))
                 {
-                    return BadRequest($"You are unable to attempt to register again right now, please try again in {registerTime} minutes");
+                    return BadRequest("Invalid Email or Username");
                 }
 
-                if (user == null)
+                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
+                if (user == null || user.AccountStatus != "Validated")
                 {
-                    user = new UserModel()
+                    if (user != null && user.AccountStatus != "Validated" && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
                     {
-                        Email = userRegister.Email,
-                        Username = userRegister.Username,
-                        Role = "None",
-                        LoginCode = Guid.NewGuid().ToString(),
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                        LoginCodeExp = new List<DateTime> { DateTime.UtcNow.AddMinutes(registerTime) }
-                    };
-                    _db.Users.Add(user);
+                        return BadRequest($"You are unable to attempt to register again at this time, Please wait and retry in: {registerTime}");
+                    }
+
+                    if (user == null)
+                    {
+                        user = new UserModel()
+                        {
+                            Email = registerRequest.Email,
+                            Username = registerRequest.Username,
+                            Role = "None",
+                            LoginCode = Guid.NewGuid().ToString(),
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow,
+                            LoginCodeExp = new List<DateTime> { DateTime.UtcNow.AddMinutes(registerTime) }
+                        };
+                        _db.Users.Add(user);
+                    }
+                    else
+                    {
+                        user.Username = registerRequest.Username;
+                        user.Role = "None";
+                        user.LoginCode = Guid.NewGuid().ToString();
+                        user.CreatedAt = DateTime.UtcNow;
+                        user.UpdatedAt = DateTime.UtcNow;
+                        user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(registerTime));
+                    }
+                    await _db.SaveChangesAsync();
+                    await SendEmailRegister(user);
+                    return Ok($"A confirmation email has been sent to {user.Email}");
                 }
-                else
+                if (registerRequest.Email == user.Email || registerRequest.Username == user.Username)
                 {
-                    user.Username = userRegister.Username;
-                    user.Role = "None";
-                    user.LoginCode = Guid.NewGuid().ToString();
-                    user.CreatedAt = DateTime.UtcNow;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(registerTime));
+                    return BadRequest("Email or Username Has Already Been Taken");
                 }
-                await _db.SaveChangesAsync();
-                await SendEmailRegister(user);
-                return Ok($"A confirmation email has been sent to {user.Email}");
+                return BadRequest();
             }
-            if (userRegister.Email == user.Email || userRegister.Username == user.Username)
+            catch (Exception ex)
             {
-                return BadRequest("Email or Username Has Already Been Taken");
+                return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
-            return BadRequest();
         }
+
+        // OLD OUTDATED CODE BELOW
 
         // Complete user registration
         [AllowAnonymous]
@@ -276,14 +265,14 @@ namespace Blacksmith.WebApi.Controllers
 
         private async Task SendEmailLogin(UserModel currentUser)
         {
-            var subject = "Fantasy Web App - Login Verification Code";
+            var subject = "Blacksmith Web App - Login Verification Code";
             var message = $"5 Minute Login URL: \n" +
                 $"https://localhost:7001/login/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
         }
         private async Task SendEmailRegister(UserModel currentUser)
         {
-            var subject = "Fantasy Web App - Comfirm Registration";
+            var subject = "Blacksmith Web app - Comfirm Registration";
             var message = $"5 Minute Registration URL: \n" +
                 $"https://localhost:7001/register/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
