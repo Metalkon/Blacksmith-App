@@ -11,6 +11,19 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+/*
+NOTES:
+- Adjust login/register times to include loginstatus which is currently unused.
+-
+-
+-
+-
+-
+*/
+
+
+
+
 namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -42,7 +55,7 @@ namespace Blacksmith.WebApi.Controllers
                     return BadRequest("Invalid Email or Username");
                 }
 
-                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
+                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
                 if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus != "Validated")
                 {
                     return NotFound("User Not Found or Invalid Account Status");
@@ -61,7 +74,7 @@ namespace Blacksmith.WebApi.Controllers
                 user.LoginCode = Guid.NewGuid().ToString();
                 user.LoginCodeExp.Add(DateTime.UtcNow);
                 await _db.SaveChangesAsync();
-                await SendEmailLogin(user);
+                //await SendEmailLogin(user);
 
                 return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
             }
@@ -82,7 +95,7 @@ namespace Blacksmith.WebApi.Controllers
                 {
                     return BadRequest("Invalid Request");
                 }
-                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
                 if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
                 {
                     return BadRequest("Your login code has expired, please try to login again");
@@ -122,7 +135,7 @@ namespace Blacksmith.WebApi.Controllers
                     return BadRequest("Invalid Email or Username");
                 }
 
-                UserModel user = await _db.Users.SingleAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
+                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
                 if (user == null || user.AccountStatus != "Validated")
                 {
                     if (user != null && user.AccountStatus != "Validated" && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)

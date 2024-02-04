@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Blacksmith.WebApi.Services;
 
 
 namespace Blacksmith.WebApi
@@ -28,8 +29,10 @@ namespace Blacksmith.WebApi
             })
             );
 
-            // Jwt/Auth stuff
-            builder.Services.AddAuthentication(x =>
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+            // Jwt/Auth stuff 
+            /*builder.Services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -47,7 +50,7 @@ namespace Blacksmith.WebApi
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true
                 };
-            });
+            });*/
 
             builder.Services.AddAuthorization(); // *
 
