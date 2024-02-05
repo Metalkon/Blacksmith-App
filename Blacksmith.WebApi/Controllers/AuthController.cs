@@ -13,15 +13,13 @@ using System.Text;
 
 /*
 NOTES:
-- Adjust login/register times to include loginstatus which is currently unused.
+- Adjust login/register c/d times to include loginstatus which is currently unused.
 -
 -
 -
 -
 -
 */
-
-
 
 
 namespace Blacksmith.WebApi.Controllers
@@ -32,12 +30,12 @@ namespace Blacksmith.WebApi.Controllers
     {
         private readonly ApplicationDbContext _db;
         private IConfiguration _config;
-        private readonly IEmailSender _emailSender;
+        private readonly EmailSender _emailSender;
 
         // Allowed time to login/register before code/url expires
         private int registerTime = 15;
 
-        public AuthController(ApplicationDbContext context, IConfiguration config, IEmailSender emailSender)
+        public AuthController(ApplicationDbContext context, IConfiguration config, EmailSender emailSender)
         {
             _db = context;  
             _config = config;
@@ -66,7 +64,7 @@ namespace Blacksmith.WebApi.Controllers
                     TimeSpan remainingTime = thirdMostRecent.AddHours(24) - DateTime.UtcNow;
                     return BadRequest($"Exceeded the maximum login attempts. Please wait and retry in: {remainingTime}");
                 }
-                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow.AddMinutes(-1))
+                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow)
                 {
                     return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
                 }
@@ -74,9 +72,16 @@ namespace Blacksmith.WebApi.Controllers
                 user.LoginCode = Guid.NewGuid().ToString();
                 user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(15));
                 await _db.SaveChangesAsync();
-                await SendEmailLogin(user);
 
-                return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
+                bool sendEmail = await SendEmailLogin(user);
+                if (sendEmail == true)
+                {
+                    return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
+                }
+                else
+                {
+                    return StatusCode(500, "Failed to send the login email. Please try again later or contact support for assistance.");
+                }
             }
             catch (Exception ex)
             {
@@ -84,7 +89,6 @@ namespace Blacksmith.WebApi.Controllers
             }
         }
 
-        // Complete user login
         [AllowAnonymous]
         [HttpPost("login/confirmation")]
         public async Task<ActionResult<TokenDTO>> LoginConfirmation(UserConfirmDTO userConfirm)
@@ -276,19 +280,21 @@ namespace Blacksmith.WebApi.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private async Task SendEmailLogin(UserModel currentUser)
+        private async Task<bool> SendEmailLogin(UserModel currentUser)
         {
             var subject = "Blacksmith Web App - Login Verification Code";
             var message = $"5 Minute Login URL: \n" +
                 $"https://localhost:7001/login/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
-            var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+            bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+            return sentEmail;
         }
-        private async Task SendEmailRegister(UserModel currentUser)
+        private async Task<bool> SendEmailRegister(UserModel currentUser)
         {
             var subject = "Blacksmith Web app - Comfirm Registration";
             var message = $"5 Minute Registration URL: \n" +
                 $"https://localhost:7001/register/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
-            var sendEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+            bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+            return sentEmail;
         }
     }
 }

@@ -29,10 +29,10 @@ namespace Blacksmith.WebApi
             })
             );
 
-            builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddTransient<EmailSender>();
 
             // Jwt/Auth stuff 
-            /*builder.Services.AddAuthentication(x =>
+            builder.Services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,7 +50,7 @@ namespace Blacksmith.WebApi
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true
                 };
-            });*/
+            });
 
             builder.Services.AddAuthorization(); // *
 

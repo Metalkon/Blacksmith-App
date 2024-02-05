@@ -3,19 +3,19 @@ using System.Net.Mail;
 
 namespace Blacksmith.WebApi.Services
 {
-    public class EmailSender : IEmailSender
+    public class EmailSender
     {
-        private readonly IConfiguration _configuration;
+        private IConfiguration _config;
 
-        public EmailSender(IConfiguration configuration)
+        public EmailSender(IConfiguration config)
         {
-            _configuration = configuration;
+            _config = config;
         }
 
         public async Task<bool> SendEmailAsync(string email, string subject, string message)
         {
-            var mail = _configuration["EmailSettings:Email"];
-            var pw = _configuration["EmailSettings:Password"];
+            var mail = _config["EmailSettings:Email"];
+            var pw = _config["EmailSettings:Password"];
 
             var client = new SmtpClient("smtp-mail.outlook.com", 587)
             {
