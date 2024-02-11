@@ -7,7 +7,7 @@ namespace Blacksmith.WebApi.Models
     - "Active", Normal user status
     - "Inactive", Abnormal user status
     - "Suspended", User cannot login for x amount of time
-    - "Banned", User is restricted from login
+    - "Banned", User is restricted from login, refresh token cannot be used
 
     Login Status:
     - "Active", Normal login status
@@ -63,25 +63,14 @@ namespace Blacksmith.WebApi.Models
             // LoginStatus
             if (user.LoginStatus.Status == "Active" 
                 && user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-1)) >= 3
-                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-3)) >= 4
-                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-6)) >= 5
-                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-24)) >= 6)
+                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-3)) >= 6
+                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-12)) >= 9)
             {
                 user.LoginStatus.Status = "Locked";
                 if (user.LoginStatus.Value >= 3)
                 {
                     user.LoginStatus.Time = DateTime.UtcNow.AddDays(1);
                     user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(1));
-                }
-                if (user.LoginStatus.Value >= 5)
-                {
-                    user.LoginStatus.Time = DateTime.UtcNow.AddDays(3);
-                    user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(3));
-                }
-                if (user.LoginStatus.Value >= 10)
-                {
-                    user.LoginStatus.Time = DateTime.UtcNow.AddDays(7);
-                    user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(7));
                 }
                 else
                 {
@@ -90,16 +79,11 @@ namespace Blacksmith.WebApi.Models
                 }
                 user.LoginStatus.Value++;
             }
-            if (user.LoginStatus.Status == "Active" && user.LoginStatus.Value >= 1 
-                && user.LoginStatus.History.OrderByDescending(x => x).FirstOrDefault() >= DateTime.Now.AddDays(-7) == false)
-            {
-                user.LoginStatus.Value--;
-            }
             if ((user.LoginStatus.Status == "Locked" || user.LoginStatus.Status == "Awaiting") && user.LoginStatus.Time <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Active";
             }
-
+            // Successful login will reset LoginStatus.Value
             return user;
         }
     }
