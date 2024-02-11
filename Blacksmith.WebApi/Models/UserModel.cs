@@ -2,6 +2,18 @@
 
 namespace Blacksmith.WebApi.Models
 {
+    /*
+    Account Status:
+    - "Active", Normal user status
+    - "Inactive", Abnormal user status
+    - "Suspended", User cannot login for x amount of time
+    - "Banned", User is restricted from login
+
+    Login Status:
+    - "Awaiting", User cannot attempt login/regiser for x minutes, and separate registration checks (null/existing) with this
+    - "Locked", User is restricted from login for x time
+    */
+
     public class UserModel
     {
         [Key]
@@ -16,9 +28,9 @@ namespace Blacksmith.WebApi.Models
         [Required]
         public string Role { get; set; }
         [Required]
-        public string AccountStatus { get; set; }
+        public AccountStatus AccountStatus { get; set; }
         [Required]
-        public string LoginStatus { get; set; }
+        public LoginStatus LoginStatus { get; set; }
         [Required]
         public string LoginCode { get; set; }
         [Required]
@@ -31,12 +43,43 @@ namespace Blacksmith.WebApi.Models
         public UserModel()
         {
             Role = "None";
-            AccountStatus = "Unconfirmed";
-            LoginStatus = string.Empty;
+            AccountStatus = new AccountStatus();
+            LoginStatus = new LoginStatus();
             LoginCode = string.Empty;
             LoginCodeExp = new List<DateTime> { DateTime.UtcNow, DateTime.UtcNow.AddDays(400) };
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        // Update the status after fetching the user from the database
+        public UserModel UpdateStatus(UserModel user)
+        {
+
+            return user;
+        }
+    }
+
+    public class AccountStatus
+    {
+        public bool Validated { get; set; }
+        public string Status { get; set; }
+        public int? Value { get; set; }
+        public DateTime? Time { get; set; }
+        public AccountStatus()
+        {
+            Validated = false;
+            Status = "Inactive";
+        }
+    }
+
+    public class LoginStatus
+    {
+        public string Status { get; set; }
+        public int? Value { get; set; }
+        public DateTime? Time { get; set; }
+        public LoginStatus()
+        {
+            Status = "Awaiting Register";
         }
     }
 }

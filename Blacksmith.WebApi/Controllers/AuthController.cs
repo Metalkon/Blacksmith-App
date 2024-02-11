@@ -54,7 +54,7 @@ namespace Blacksmith.WebApi.Controllers
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
-                if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus != "Validated")
+                if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus.Status != "Validated")
                 {
                     return NotFound("User Not Found or Invalid Account Status");
                 }
@@ -140,9 +140,9 @@ namespace Blacksmith.WebApi.Controllers
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
-                if (user == null || user.AccountStatus != "Validated")
+                if (user == null || user.AccountStatus.Status != "Validated")
                 {
-                    if (user != null && user.AccountStatus != "Validated" && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+                    if (user != null && user.AccountStatus.Status != "Validated" && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
                     {
                         return BadRequest($"You are unable to attempt to register again at this time, Please wait and retry in: {registerTime}");
                     }
@@ -206,7 +206,7 @@ namespace Blacksmith.WebApi.Controllers
             if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
             {
                 user.Role = "User";
-                user.AccountStatus = "Validated";
+                user.AccountStatus.Status = "Validated";
                 user.UpdatedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
                 RefreshToken newRefreshToken = await GenerateRefreshToken(user);
