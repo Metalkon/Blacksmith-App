@@ -42,17 +42,17 @@ namespace Blacksmith.WebApi.Models
 
         public UserModel()
         {
-            Role = "None";
+            Role = "User";
             AccountStatus = new AccountStatus();
             LoginStatus = new LoginStatus();
             LoginCode = string.Empty;
-            LoginCodeExp = new List<DateTime> { DateTime.UtcNow, DateTime.UtcNow.AddDays(400) };
+            LoginCodeExp = new List<DateTime> { DateTime.UtcNow, DateTime.UtcNow.AddMinutes(15) };
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
 
         // Update the status after fetching the user from the database
-        public UserModel UpdateStatus(UserModel user)
+        public async Task<UserModel> UpdateStatus(UserModel user)
         {
 
             return user;
@@ -79,7 +79,7 @@ namespace Blacksmith.WebApi.Models
         public DateTime? Time { get; set; }
         public LoginStatus()
         {
-            Status = "Awaiting Register";
+            Status = "Awaiting";
         }
     }
 }
