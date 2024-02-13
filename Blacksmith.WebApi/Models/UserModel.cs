@@ -51,6 +51,7 @@ namespace Blacksmith.WebApi.Models
             LoginCodeExp = new List<DateTime>();
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            LoginHistory = new List<DateTime>();
         }
 
         // Update the user after fetching it from the database
