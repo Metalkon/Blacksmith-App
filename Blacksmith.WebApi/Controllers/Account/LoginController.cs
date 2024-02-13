@@ -39,8 +39,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
-                user = await user.UpdateUser(user);
-
+                if (user != null)
+                {
+                    user = await user.UpdateUser(user);
+                }
                 if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus.Status != "Validated")
                 {
                     return NotFound("User Not Found or Invalid Account Status");

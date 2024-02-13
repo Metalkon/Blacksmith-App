@@ -30,6 +30,7 @@ namespace Blacksmith.WebApi
             );
 
             builder.Services.AddTransient<EmailSender>();
+            builder.Services.AddTransient<TokenService>();
 
             // Jwt/Auth stuff 
             builder.Services.AddAuthentication(x =>

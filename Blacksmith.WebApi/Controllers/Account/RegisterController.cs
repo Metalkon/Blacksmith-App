@@ -39,7 +39,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
-                user = await user.UpdateUser(user);
+                if (user != null)
+                {
+                    user = await user.UpdateUser(user);
+                }
 
                 if (user == null || user.AccountStatus.Status != "Validated")
                 {
@@ -99,8 +102,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                 return BadRequest("Invalid Request");
             }
             UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            user = await user.UpdateUser(user);
-
+            if (user != null)
+            {
+                user = await user.UpdateUser(user);
+            }
             if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
             {
                 return BadRequest("The time to confirm your email has expired, please try again");
