@@ -40,6 +40,7 @@ namespace Blacksmith.WebApi.Models
         public DateTime CreatedAt { get; set; }
         [Required]
         public DateTime UpdatedAt { get; set; }
+        public List<DateTime> LoginHistory { get; set; }
 
         public UserModel()
         {
@@ -52,38 +53,31 @@ namespace Blacksmith.WebApi.Models
             UpdatedAt = DateTime.UtcNow;
         }
 
-        // Update the status after fetching the user from the database
+        // Update the user after fetching it from the database
+        public async Task<UserModel> UpdateUser(UserModel user)
+        {
+            user = await UpdateStatus(user);
+            // more code here
+
+            return user;
+        }
+
         public async Task<UserModel> UpdateStatus(UserModel user)
         {
-            // AccountStatus
             if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.Time <= DateTime.UtcNow)
             {
                 user.AccountStatus.Status = "Active";
             }
-            // LoginStatus
-            if (user.LoginStatus.Status == "Active" 
-                && user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-1)) >= 3
-                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-3)) >= 6
-                || user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddHours(-12)) >= 9)
+            if (user.LoginStatus.Status == "Active"
+                && user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddDays(-30)) >= 3)
             {
                 user.LoginStatus.Status = "Locked";
-                if (user.LoginStatus.Value >= 3)
-                {
-                    user.LoginStatus.Time = DateTime.UtcNow.AddDays(1);
-                    user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(1));
-                }
-                else
-                {
-                    user.LoginStatus.Time = DateTime.UtcNow.AddHours(3);
-                    user.LoginStatus.History.Add(DateTime.UtcNow.AddHours(3));
-                }
-                user.LoginStatus.Value++;
+                user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(1));
             }
-            if ((user.LoginStatus.Status == "Locked" || user.LoginStatus.Status == "Awaiting") && user.LoginStatus.Time <= DateTime.UtcNow)
+            if (user.LoginStatus.Status == "Awaiting" && user.LoginStatus.Time <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Active";
             }
-            // Successful login will reset LoginStatus.Value
             return user;
         }
     }

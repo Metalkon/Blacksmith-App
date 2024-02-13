@@ -11,17 +11,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-/*
-NOTES:
-- Adjust login/register c/d times to include loginstatus which is currently unused.
--
--
--
--
--
-*/
-
-
 namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -54,8 +43,8 @@ namespace Blacksmith.WebApi.Controllers
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() && x.Username.ToLower() == loginRequest.Username.ToLower());
-                user = await user.UpdateStatus(user);
-                
+                user = await user.UpdateUser(user);
+
                 if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus.Status != "Validated")
                 {
                     return NotFound("User Not Found or Invalid Account Status");
@@ -96,7 +85,7 @@ namespace Blacksmith.WebApi.Controllers
                     return BadRequest("Invalid Request");
                 }
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
-                user = await user.UpdateStatus(user);
+                user = await user.UpdateUser(user);
 
                 if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
                 {
@@ -138,7 +127,7 @@ namespace Blacksmith.WebApi.Controllers
                 }
 
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
-                user = await user.UpdateStatus(user);
+                user = await user.UpdateUser(user);
 
                 if (user == null || user.AccountStatus.Status != "Validated")
                 {
@@ -198,7 +187,7 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest("Invalid Request");
             }
             UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            user = await user.UpdateStatus(user);
+            user = await user.UpdateUser(user);
 
             if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
             {
