@@ -46,7 +46,7 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                 if (user == null || user.AccountStatus.Status != "Validated")
                 {
-                    if (user != null && user.AccountStatus.Status != "Validated" && user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+                    if (user != null && user.AccountStatus.Status != "Validated" && user.LoginCodeExp <= DateTime.UtcNow)
                     {
                         return BadRequest($"You are unable to attempt to register again at this time, Please wait and retry in: {15}");
                     }
@@ -61,7 +61,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                             LoginCode = Guid.NewGuid().ToString(),
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow,
-                            LoginCodeExp = new List<DateTime> { DateTime.UtcNow.AddMinutes(15) }
+                            LoginCodeExp = DateTime.UtcNow.AddMinutes(15)
                         };
                         _db.Users.Add(user);
                     }
@@ -72,7 +72,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.CreatedAt = DateTime.UtcNow;
                         user.UpdatedAt = DateTime.UtcNow;
-                        user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(15));
+                        user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
                     }
                     await _db.SaveChangesAsync();
                     await SendEmailRegister(user);
@@ -106,7 +106,7 @@ namespace Blacksmith.WebApi.Controllers.Account
             {
                 user = await user.UpdateUser(user);
             }
-            if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+            if (user.LoginCodeExp <= DateTime.UtcNow)
             {
                 return BadRequest("The time to confirm your email has expired, please try again");
             }

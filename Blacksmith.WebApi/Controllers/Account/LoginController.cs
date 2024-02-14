@@ -47,13 +47,13 @@ namespace Blacksmith.WebApi.Controllers.Account
                 {
                     return NotFound("User Not Found or Invalid Account Status");
                 }
-                if (user.LoginCodeExp.OrderByDescending(x => x).FirstOrDefault() >= DateTime.UtcNow)
+                if (user.LoginCodeExp >= DateTime.UtcNow)
                 {
                     return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
                 }
 
                 user.LoginCode = Guid.NewGuid().ToString();
-                user.LoginCodeExp.Add(DateTime.UtcNow.AddMinutes(15));
+                user.LoginCodeExp =DateTime.UtcNow.AddMinutes(15);
                 await _db.SaveChangesAsync();
 
                 bool sendEmail = await SendEmailLogin(user);
@@ -85,7 +85,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
                 user = await user.UpdateUser(user);
 
-                if (user.LoginCodeExp.Any() && user.LoginCodeExp.Last() <= DateTime.UtcNow)
+                if (user.LoginCodeExp <= DateTime.UtcNow)
                 {
                     return BadRequest("Your login code has expired, please try to login again");
                 }

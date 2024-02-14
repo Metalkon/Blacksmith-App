@@ -35,12 +35,11 @@ namespace Blacksmith.WebApi.Models
         [Required]
         public string LoginCode { get; set; }
         [Required]
-        public List<DateTime> LoginCodeExp { get; set; }
+        public DateTime LoginCodeExp { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         [Required]
         public DateTime UpdatedAt { get; set; }
-        public List<DateTime> LoginHistory { get; set; }
 
         public UserModel()
         {
@@ -48,37 +47,34 @@ namespace Blacksmith.WebApi.Models
             AccountStatus = new AccountStatus();
             LoginStatus = new LoginStatus();
             LoginCode = string.Empty;
-            LoginCodeExp = new List<DateTime>();
+            LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            LoginHistory = new List<DateTime>();
         }
 
         // Update the user after fetching it from the database
         public async Task<UserModel> UpdateUser(UserModel user)
         {
             user = await UpdateStatus(user);
-            // more code here
-
             return user;
         }
 
         public async Task<UserModel> UpdateStatus(UserModel user)
         {
-            if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.Time <= DateTime.UtcNow)
+            if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.StatusExp <= DateTime.UtcNow)
             {
                 user.AccountStatus.Status = "Active";
             }
-            if (user.LoginStatus.Status == "Active"
-                && user.LoginCodeExp.OrderByDescending(x => x).Count(x => x >= DateTime.UtcNow.AddDays(-30)) >= 3)
-            {
-                user.LoginStatus.Status = "Locked";
-                user.LoginStatus.History.Add(DateTime.UtcNow.AddDays(1));
-            }
-            if (user.LoginStatus.Status == "Awaiting" && user.LoginStatus.Time <= DateTime.UtcNow)
+            if (user.LoginStatus.Status == "Awaiting" && user.LoginStatus.StatusExp <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Active";
             }
+            if (user.LoginStatus.LoginAttempts >= 3)
+            {
+                user.LoginStatus.Status = "Locked";
+            }
+            // Value set to 0 on successful login/register to prevent locked status
+            user.LoginStatus.LoginAttempts++;
             return user;
         }
     }
@@ -87,8 +83,7 @@ namespace Blacksmith.WebApi.Models
     {
         public bool Validated { get; set; }
         public string Status { get; set; }
-        public int? Value { get; set; }
-        public DateTime? Time { get; set; }
+        public DateTime? StatusExp { get; set; }
         public AccountStatus()
         {
             Validated = false;
@@ -99,13 +94,12 @@ namespace Blacksmith.WebApi.Models
     public class LoginStatus
     {
         public string Status { get; set; }
-        public int? Value { get; set; }
-        public DateTime? Time { get; set; }
-        public List<DateTime> History { get; set; }
+        public string? StatusCode { get; set; }
+        public int? LoginAttempts { get; set; }
+        public DateTime? StatusExp { get; set; }
         public LoginStatus()
         {
             Status = "Awaiting";
-            History = new List<DateTime>();
         }
     }
 }
