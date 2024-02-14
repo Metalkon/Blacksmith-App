@@ -38,49 +38,51 @@ namespace Blacksmith.WebApi.Controllers.Account
                     return BadRequest("Invalid Email or Username");
                 }
 
-                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() && x.Username.ToLower() == registerRequest.Username.ToLower());
+                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() || x.Username.ToLower() == registerRequest.Username.ToLower());
                 if (user != null)
                 {
+                    if (user.AccountStatus.Validated == true 
+                        || (registerRequest.Email == user.Email && registerRequest.Username != user.Username)
+                        || (registerRequest.Email != user.Email && registerRequest.Username == user.Username))
+                    {
+                        return BadRequest("Email or Username has already been taken");
+                    }
+
                     user = await user.UpdateUser(user);
-                }
 
-                if (user == null || user.AccountStatus.Status != "Validated")
-                {
-                    if (user != null && user.AccountStatus.Status != "Validated" && user.LoginCodeExp <= DateTime.UtcNow)
+                    if (user.AccountStatus.Validated == false && user.LoginStatus.Status == "Locked")
                     {
-                        return BadRequest($"You are unable to attempt to register again at this time, Please wait and retry in: {15}");
+                        return StatusCode(403, "Registration with this email address has been Locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the URL sent in the most recent email.");
                     }
-
-                    if (user == null)
+                    if (user.AccountStatus.Validated == false && user.LoginCodeExp >= DateTime.UtcNow)
                     {
-                        user = new UserModel()
-                        {
-                            Email = registerRequest.Email,
-                            Username = registerRequest.Username,
-                            Role = "None",
-                            LoginCode = Guid.NewGuid().ToString(),
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow,
-                            LoginCodeExp = DateTime.UtcNow.AddMinutes(15)
-                        };
-                        _db.Users.Add(user);
+                        return BadRequest($"You are unable to attempt to register again so soon again after your previous attempt");
                     }
-                    else
+                    if (user.AccountStatus.Validated == false)
                     {
+                        user.Email = registerRequest.Email;
                         user.Username = registerRequest.Username;
-                        user.Role = "None";
                         user.LoginCode = Guid.NewGuid().ToString();
-                        user.CreatedAt = DateTime.UtcNow;
-                        user.UpdatedAt = DateTime.UtcNow;
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
+                        user.UpdatedAt = DateTime.UtcNow;
                     }
-                    await _db.SaveChangesAsync();
-                    await SendEmailRegister(user);
-                    return Ok($"A confirmation email has been sent to {user.Email}");
                 }
-                if (registerRequest.Email == user.Email || registerRequest.Username == user.Username)
+                if (user == null)
                 {
-                    return BadRequest("Email or Username Has Already Been Taken");
+                    user = new UserModel()
+                    {
+                        Email = registerRequest.Email,
+                        Username = registerRequest.Username,
+                        LoginCode = Guid.NewGuid().ToString(),
+                    };
+                    _db.Users.Add(user);
+                }
+                user.LoginStatus.LoginAttempts++;
+                await _db.SaveChangesAsync();
+                bool confirmEmail = await SendEmailRegister(user);
+                if (confirmEmail == true)
+                {
+                    return Ok($"A confirmation email has been sent to {user.Email}");
                 }
                 return BadRequest();
             }

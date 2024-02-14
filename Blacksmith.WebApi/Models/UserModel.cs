@@ -61,20 +61,20 @@ namespace Blacksmith.WebApi.Models
 
         public async Task<UserModel> UpdateStatus(UserModel user)
         {
+            // AccountStatus
             if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.StatusExp <= DateTime.UtcNow)
             {
                 user.AccountStatus.Status = "Active";
             }
-            if (user.LoginStatus.Status == "Awaiting" && user.LoginStatus.StatusExp <= DateTime.UtcNow)
+            // LoginStatus
+            if (user.LoginStatus.Status == "Awaiting" && user.LoginCodeExp <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Active";
             }
-            if (user.LoginStatus.LoginAttempts >= 3)
+            if (user.LoginStatus.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Locked";
             }
-            // Value set to 0 on successful login/register to prevent locked status
-            user.LoginStatus.LoginAttempts++;
             return user;
         }
     }
@@ -95,8 +95,7 @@ namespace Blacksmith.WebApi.Models
     {
         public string Status { get; set; }
         public string? StatusCode { get; set; }
-        public int? LoginAttempts { get; set; }
-        public DateTime? StatusExp { get; set; }
+        public int LoginAttempts { get; set; }
         public LoginStatus()
         {
             Status = "Awaiting";
