@@ -3,6 +3,8 @@ using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -92,46 +94,81 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
         }
 
-        // OLD OUTDATED CODE BELOW
-
         // Complete user registration
         [AllowAnonymous]
         [HttpPost("register/confirmation")]
         public async Task<ActionResult<string>> RegisterConfirmation(UserConfirmDTO userConfirm)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest("Invalid Request");
-            }
-            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower());
-            if (user != null)
-            {
-                user = await user.UpdateUser(user);
-            }
-            if (user.LoginCodeExp <= DateTime.UtcNow)
-            {
-                return BadRequest("The time to confirm your email has expired, please try again");
-            }
-            // If user information matches with the database, validate account and login the user.
-            if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
-            {
-                user.Role = "User";
-                user.AccountStatus.Status = "Validated";
-                user.UpdatedAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
-                RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
-                var tokenDTO = new TokenDTO()
+                if (!ModelState.IsValid || userConfirm == null || string.IsNullOrEmpty(userConfirm.User.Username) || string.IsNullOrEmpty(userConfirm.User.Email) || string.IsNullOrEmpty(userConfirm.Code))
                 {
-                    RefreshToken = newRefreshToken.Token,
-                    Jwt = await _tokenService.GenerateJwt(user)
-                };
-                return Ok(tokenDTO);
+                    return BadRequest("Invalid Request");
+                }
+
+                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+
+                if (user != null)
+                {
+                    if (user.AccountStatus.Validated == true)
+                    {
+                        return BadRequest("Your account has already been validated.");
+                    }
+                    if (user.LoginStatus.Status != "Awaiting")
+                    {
+                        return BadRequest("Your account is not currently awaiting confirmation to register.");
+                    }
+                    if (user.LoginCode != userConfirm.Code)
+                    {
+                        return BadRequest("The provided login code is invalid.");
+                    }
+                    if (user.LoginCodeExp <= DateTime.UtcNow)
+                    {
+                        return BadRequest("The time to confirm your email address has expired, please try registering again");
+                    }
+
+                    if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+                    {
+                        user.AccountStatus.Validated = true;
+                        user.AccountStatus.Status = "Active";
+                        user.LoginStatus.Status = "Active";
+                        user.LoginStatus.LoginAttempts = 0;
+                        user.UpdatedAt = DateTime.UtcNow;
+                        user.CreatedAt = DateTime.UtcNow;
+
+                        await _db.SaveChangesAsync();
+
+                        RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
+                        var tokenDTO = new TokenDTO()
+                        {
+                            RefreshToken = newRefreshToken.Token,
+                            Jwt = await _tokenService.GenerateJwt(user)
+                        };
+                        return Ok(tokenDTO);
+                    }
+                }
+                if (user == null)
+                {
+                    return BadRequest("User Doesn't Exist");
+                }
+                return BadRequest();
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest("Invalid Confirmation Data");
+                return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
         }
+
+
+
+
+
+
+
+
+
+
+
 
         private async Task<bool> SendEmailRegister(UserModel currentUser)
         {
