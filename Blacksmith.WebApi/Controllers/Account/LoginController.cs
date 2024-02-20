@@ -2,7 +2,7 @@
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -14,15 +14,12 @@ namespace Blacksmith.WebApi.Controllers.Account
     public class LoginController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
-        private IConfiguration _config;
         private readonly EmailSender _emailSender;
         private readonly TokenService _tokenService;
 
-
-        public LoginController(ApplicationDbContext context, IConfiguration config, EmailSender emailSender, TokenService tokenService)
+        public LoginController(ApplicationDbContext context, EmailSender emailSender, TokenService tokenService)
         {
             _db = context;
-            _config = config;
             _emailSender = emailSender;
             _tokenService=tokenService;
         }
@@ -33,7 +30,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             try
             {
-                if (!ModelState.IsValid || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Username))
+                if (!ModelState.IsValid || loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Username))
                 {
                     return BadRequest("Invalid Email or Username");
                 }
@@ -42,29 +39,50 @@ namespace Blacksmith.WebApi.Controllers.Account
                 if (user != null)
                 {
                     user = await user.UpdateUser(user);
-                }
-                if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Email) || user.AccountStatus.Status != "Validated")
-                {
-                    return NotFound("User Not Found or Invalid Account Status");
-                }
-                if (user.LoginCodeExp >= DateTime.UtcNow)
-                {
-                    return BadRequest("Too early to attempt login again. Please wait awhile before trying again.");
-                }
 
-                user.LoginCode = Guid.NewGuid().ToString();
-                user.LoginCodeExp =DateTime.UtcNow.AddMinutes(15);
-                await _db.SaveChangesAsync();
+                    if (user.AccountStatus.Status == "Banned")
+                    {
+                        return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
+                    }
+                    if (user.AccountStatus.Status == "Suspended")
+                    {
+                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
+                    }
+                    if (user.AccountStatus.Validated && user.LoginStatus.Status == "Locked")
+                    {
+                        return StatusCode(403, "Access Denied: Login with this email address has been Locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the \"Unlock\" URL sent in the most recently sent email.");
+                    }
+                    if (user.AccountStatus.Validated && user.LoginCodeExp >= DateTime.UtcNow)
+                    {
+                        return BadRequest($"Access Denied: Please wait before attempting to log in again.");
+                    }
+                    if (user.AccountStatus.Validated == false)
+                    {
+                        return BadRequest("Access Denied: Your account has not been validated. Please check your email for verification instructions.");
+                    }
+                    if (user.AccountStatus.Validated == true)
+                    {
+                        user.LoginCode = Guid.NewGuid().ToString();
+                        user.LoginCodeExp =DateTime.UtcNow.AddMinutes(15);
 
-                bool sendEmail = await SendEmailLogin(user);
-                if (sendEmail == true)
-                {
-                    return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
+                        await _db.SaveChangesAsync();
+                        bool sendEmail = await SendEmailLogin(user);
+
+                        if (sendEmail == true)
+                        {
+                            return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
+                        }
+                    }
+                    else
+                    {
+                        return StatusCode(500, "Failed to send the login email. Please try again later or contact support for assistance.");
+                    }
                 }
-                else
+                if (user == null)
                 {
-                    return StatusCode(500, "Failed to send the login email. Please try again later or contact support for assistance.");
+                    return BadRequest("User Doesn't Exist");
                 }
+                return BadRequest();
             }
             catch (Exception ex)
             {
@@ -111,7 +129,6 @@ namespace Blacksmith.WebApi.Controllers.Account
                 return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
         }
-
         private async Task<bool> SendEmailLogin(UserModel currentUser)
         {
             var subject = "Blacksmith Web App - Login Verification Code";
