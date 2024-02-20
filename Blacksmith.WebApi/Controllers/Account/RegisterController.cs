@@ -2,9 +2,6 @@
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -16,14 +13,12 @@ namespace Blacksmith.WebApi.Controllers.Account
     public class RegisterController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
-        private IConfiguration _config;
         private readonly EmailSender _emailSender;
         private readonly TokenService _tokenService;
 
-        public RegisterController(ApplicationDbContext context, IConfiguration config, EmailSender emailSender, TokenService tokenService)
+        public RegisterController(ApplicationDbContext context, EmailSender emailSender, TokenService tokenService)
         {
             _db = context;
-            _config = config;
             _emailSender = emailSender;
             _tokenService=tokenService;
         }
@@ -54,7 +49,7 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                     if (user.AccountStatus.Validated == false && user.LoginStatus.Status == "Locked")
                     {
-                        return StatusCode(403, "Registration with this email address has been Locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the URL sent in the most recent email.");
+                        return StatusCode(403, "Access Denied: Registration with this email address has been Locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the \"Unlock\" URL sent in the most recently sent email.");
                     }
                     if (user.AccountStatus.Validated == false && user.LoginCodeExp >= DateTime.UtcNow)
                     {
@@ -159,17 +154,6 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
         private async Task<bool> SendEmailRegister(UserModel currentUser)
         {
             var subject = "Blacksmith Web app - Comfirm Registration";
@@ -178,6 +162,5 @@ namespace Blacksmith.WebApi.Controllers.Account
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }
-
     }
 }
