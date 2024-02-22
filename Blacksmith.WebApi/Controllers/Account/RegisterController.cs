@@ -76,10 +76,14 @@ namespace Blacksmith.WebApi.Controllers.Account
                 }
                 user.LoginStatus.LoginAttempts++;
                 await _db.SaveChangesAsync();
-                bool confirmEmail = await SendEmailRegister(user);
-                if (confirmEmail == true)
+                bool sendEmail = await SendEmailRegister(user);
+                if (sendEmail == true)
                 {
                     return Ok($"A confirmation email has been sent to {user.Email}");
+                }
+                if (sendEmail == false)
+                {
+                    return StatusCode(500, "Failed to send the login email. Please try again later");
                 }
                 return BadRequest();
             }
@@ -91,7 +95,7 @@ namespace Blacksmith.WebApi.Controllers.Account
 
         // Complete user registration
         [AllowAnonymous]
-        [HttpPost("register/confirmation")]
+        [HttpPost("confirmation")]
         public async Task<ActionResult<string>> RegisterConfirmation(UserConfirmDTO userConfirm)
         {
             try
@@ -121,7 +125,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("The time to confirm your email address has expired, please try registering again");
                     }
-
+                    if (user.LoginCode != userConfirm.Code)
+                    {
+                        return BadRequest("Incorrect Code");
+                    }
                     if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
                     {
                         user.AccountStatus.Validated = true;
