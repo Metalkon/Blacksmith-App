@@ -59,6 +59,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         user.Email = registerRequest.Email;
                         user.Username = registerRequest.Username;
+                        user.LoginStatus.Status = "Awaiting";
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
                         user.UpdatedAt = DateTime.UtcNow;
@@ -165,7 +166,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith Web app - Comfirm Registration";
             var message = $"5 Minute Registration URL: \n" +
-                $"https://localhost:7001/register/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+                $"https://localhost:8001/confirmation?username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

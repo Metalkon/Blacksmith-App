@@ -1,5 +1,8 @@
+global using Microsoft.AspNetCore.Components.Authorization;
+global using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Blacksmith.Blazor.Services;
 
 namespace Blacksmith.Blazor
 {
@@ -19,6 +22,12 @@ namespace Blacksmith.Blazor
                 // For more information, see https://aka.ms/blazor-standalone-auth
                 builder.Configuration.Bind("Local", options.ProviderOptions);
             });
+
+            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+            builder.Services.AddAuthorizationCore();
+
+            builder.Services.AddBlazoredLocalStorage();
 
             await builder.Build().RunAsync();
         }

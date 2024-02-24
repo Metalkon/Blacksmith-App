@@ -1,0 +1,79 @@
+﻿@page "/Confirmation"
+@inject HttpClient client
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <!-- Content for authorized users -->
+        <p>You are already logged in.</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>test: @message</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    UserConfirmDTO userConfirm = new UserConfirmDTO();
+    string message = null;
+    string confirmType = null;
+
+    protected override void OnInitialized()
+    {
+        message = "initialized";
+        var uri = new Uri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        userConfirm.User.Username   = query["username"];
+        userConfirm.User.Email = query["email"];
+        userConfirm.Code = query["code"];
+        base.OnInitialized();
+
+        // test
+        confirmType = "Register";
+
+        // Include check for logged in users
+
+        if (confirmType == "Register")
+        {
+            SendRegisterConfirmation(userConfirm);
+        }
+        if (confirmType == "Login")
+        {
+            SendLoginConfirmation(userConfirm);
+        }
+        if (confirmType == "Unlock")
+        {
+            SendUnlockConfirmation(userConfirm);
+        }
+    }
+
+    private async Task SendRegisterConfirmation(UserConfirmDTO userConfirm)
+    {
+        var result = await client.PostAsJsonAsync($"https://localhost:8000/api/Register/confirmation", userConfirm);
+        if (result.IsSuccessStatusCode)
+        {
+            string tokenstring = await result.Content.ReadAsStringAsync();
+            TokenDTO tokens = JsonSerializer.Deserialize<TokenDTO>(tokenstring);
+            await LocalStorage.SetItemAsync("refreshtoken", tokens.RefreshToken);
+            await LocalStorage.SetItemAsync("token", tokens.Jwt);
+            await AuthStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            string error = await result.Content.ReadAsStringAsync();
+            message = $"ERROR: {error}";
+        }
+    }
+
+    private async Task SendLoginConfirmation(UserConfirmDTO userConfirm)
+    {
+        
+    }
+
+    private async Task SendUnlockConfirmation(UserConfirmDTO userConfirm)
+    {
+
+    }
+}
