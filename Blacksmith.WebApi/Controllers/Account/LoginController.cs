@@ -158,9 +158,9 @@ namespace Blacksmith.WebApi.Controllers.Account
 
         private async Task<bool> SendEmailLogin(UserModel currentUser)
         {
-            var subject = "Blacksmith Web App - Login Verification Code";
-            var message = $"5 Minute Login URL: \n" +
-                $"https://localhost:7001/login/confirmation?id={currentUser.Id}&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+            var subject = "Blacksmith App - Login Verification";
+            var message = $"To complete your login, click the link below (valid for 15 minutes):\n" +
+                          $"https://localhost:7001/login/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

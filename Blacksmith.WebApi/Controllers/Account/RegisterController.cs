@@ -126,10 +126,6 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("The time to confirm your email address has expired, please try registering again");
                     }
-                    if (user.LoginCode != userConfirm.Code)
-                    {
-                        return BadRequest("Incorrect Code");
-                    }
                     if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
                     {
                         user.AccountStatus.Validated = true;
@@ -164,9 +160,10 @@ namespace Blacksmith.WebApi.Controllers.Account
 
         private async Task<bool> SendEmailRegister(UserModel currentUser)
         {
-            var subject = "Blacksmith Web app - Comfirm Registration";
-            var message = $"5 Minute Registration URL: \n" +
-                $"https://localhost:8001/confirmation?username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+            var subject = "Blacksmith App - Registration Confirmation";
+            var message = $"Welcome to Blacksmith Web App!\n\n" +
+                          $"To complete your registration, click the link below (valid for 15 minutes):\n" +
+                          $"https://localhost:8001/confirmation?confirmType=Register&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }
