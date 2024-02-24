@@ -10,7 +10,7 @@
         <p>You are already logged in.</p>
     </Authorized>
     <NotAuthorized>
-        <p>test: @message</p>
+        <p>@message</p>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -27,30 +27,18 @@
         userConfirm.User.Username   = query["username"];
         userConfirm.User.Email = query["email"];
         userConfirm.Code = query["code"];
+        confirmType = query["confirmtype"];
         base.OnInitialized();
-
-        // test
-        confirmType = "Register";
 
         // Include check for logged in users
 
-        if (confirmType == "Register")
-        {
-            SendRegisterConfirmation(userConfirm);
-        }
-        if (confirmType == "Login")
-        {
-            SendLoginConfirmation(userConfirm);
-        }
-        if (confirmType == "Unlock")
-        {
-            SendUnlockConfirmation(userConfirm);
-        }
+        SendConfirmation(userConfirm, confirmType);
     }
 
-    private async Task SendRegisterConfirmation(UserConfirmDTO userConfirm)
+    private async Task SendConfirmation(UserConfirmDTO userConfirm, string confirmType)
     {
-        var result = await client.PostAsJsonAsync($"https://localhost:8000/api/Register/confirmation", userConfirm);
+        HttpResponseMessage result = await client.PostAsJsonAsync($"https://localhost:8000/api/{confirmType}/confirmation", userConfirm);
+
         if (result.IsSuccessStatusCode)
         {
             string tokenstring = await result.Content.ReadAsStringAsync();
@@ -65,15 +53,5 @@
             string error = await result.Content.ReadAsStringAsync();
             message = $"ERROR: {error}";
         }
-    }
-
-    private async Task SendLoginConfirmation(UserConfirmDTO userConfirm)
-    {
-        
-    }
-
-    private async Task SendUnlockConfirmation(UserConfirmDTO userConfirm)
-    {
-
     }
 }

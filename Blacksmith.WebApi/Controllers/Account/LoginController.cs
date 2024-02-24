@@ -160,7 +160,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith App - Login Verification";
             var message = $"To complete your login, click the link below (valid for 15 minutes):\n" +
-                          $"https://localhost:7001/login/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+                          $"https://localhost:8001/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }
