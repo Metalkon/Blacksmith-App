@@ -2,7 +2,6 @@
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -14,15 +13,11 @@ namespace Blacksmith.WebApi.Controllers.Account
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
-        private IConfiguration _config;
-        private readonly EmailSender _emailSender;
         private readonly TokenService _tokenService;
 
-        public AccountController(ApplicationDbContext context, IConfiguration config, EmailSender emailSender, TokenService tokenService)
+        public AccountController(ApplicationDbContext context, TokenService tokenService)
         {
             _db = context;
-            _config = config;
-            _emailSender = emailSender;
             _tokenService=tokenService;
         }
 

@@ -1,42 +1,5 @@
 ﻿@page "/admin"
-@inject HttpClient client
 
-<PageTitle>Test Page</PageTitle>
-
-<div>
-    <div><b>Enter Potato Name:</b></div>
-    <input type="text" style="width: 25%;" @bind="input">
-    <button class="btn btn-primary" @onclick="@(() => SendRequest())">Send</button>
-</div>
-<div>
-    @message
-</div>
-
-@code {
-    private TestPotato testPotato = new TestPotato();
-    private string input;
-    private string message = "Hmm...";
-
-    private async Task SendRequest()
-    {
-        try
-        {
-            TestPotato response = await client.GetFromJsonAsync<TestPotato>($"https://localhost:8000/api/Test/PotatoName?input={input}");
-            if (response != null)
-            {
-                message = $"We have a \"{response.Name}\" Potato";
-            }
-            else
-            {
-                message = $"Something went wrong";
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log or handle the exception as needed
-            message = $"An error occurred: {ex.Message}";
-        }
-        StateHasChanged();
-    }
-
-}
+<PageTitle>Admin</PageTitle>
+<div> <br /></div>
+<h2 style="text-align:center;">Admin Page</h2>

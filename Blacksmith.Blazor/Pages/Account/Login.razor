@@ -25,7 +25,6 @@
                                 </div>
                                 <div class="text-center mt-3">
                                     <button type="button" class="btn btn-primary" @onclick="@(() => SendEmail(user))">Login</button>
-
                                 </div>
                             </div>
                         </div>
@@ -49,6 +48,10 @@
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         IsUserLoggedIn = authState.User.Identity.IsAuthenticated;
+        if (IsUserLoggedIn == true)
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     async Task SendEmail(UserDTO user)

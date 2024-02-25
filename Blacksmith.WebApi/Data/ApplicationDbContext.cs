@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
-
 namespace Blacksmith.WebApi.Data
 {
     public class ApplicationDbContext : DbContext

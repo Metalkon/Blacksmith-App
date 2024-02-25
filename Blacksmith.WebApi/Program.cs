@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Blacksmith.WebApi.Services;
 
-
 namespace Blacksmith.WebApi
 {
     public class Program
@@ -72,6 +71,7 @@ namespace Blacksmith.WebApi
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseCors();

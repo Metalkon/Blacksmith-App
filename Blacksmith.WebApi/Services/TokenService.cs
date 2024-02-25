@@ -1,9 +1,6 @@
 ﻿using Blacksmith.WebApi.Data;
 using Blacksmith.WebApi.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Shared_Classes.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,7 +11,6 @@ namespace Blacksmith.WebApi.Services
     {
         private readonly ApplicationDbContext _db;
         private IConfiguration _config;
-        private readonly EmailSender _emailSender;
 
         public TokenService(ApplicationDbContext context, IConfiguration config)
         {

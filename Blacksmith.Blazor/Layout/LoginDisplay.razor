@@ -1,13 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
 
 <AuthorizeView>
     <Authorized>
-        <p style="text-align: center; font-weight: bold; color: white;">Hello, @context.User.Identity?.Name!</p>
         <div style="text-align: center;">
             <a href="Account" style="color: white; font-weight: bold;">Account</a>
             <span style="color: white; font-weight: bold;"> | </span>
-            <a href="Logout" style="color: white; font-weight: bold;">Logout</a>
+            <a href="" style="color: white; font-weight: bold;" @onclick="Logout">Logout</a>
         </div>
     </Authorized>
     <NotAuthorized>
@@ -20,8 +21,11 @@
 </AuthorizeView>
 
 @code{
-    public void BeginLogOut()
+    async Task Logout()
     {
-        Navigation.NavigateToLogout("authentication/logout");
+        await LocalStorage.RemoveItemAsync("token");
+        await LocalStorage.RemoveItemAsync("refreshtoken");
+        await LocalStorage.RemoveItemAsync("refreshexpiry");
+        await AuthStateProvider.GetAuthenticationStateAsync();
     }
 }
