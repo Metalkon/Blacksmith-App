@@ -4,13 +4,17 @@
 <AuthorizeView>
     <Authorized>
         <p style="text-align: center; font-weight: bold; color: white;">Hello, @context.User.Identity?.Name!</p>
-        <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
+        <div style="text-align: center;">
+            <a href="Account" style="color: white; font-weight: bold;">Account</a>
+            <span style="color: white; font-weight: bold;"> | </span>
+            <a href="Logout" style="color: white; font-weight: bold;">Logout</a>
+        </div>
     </Authorized>
     <NotAuthorized>
         <div style="text-align: center;">
-            <a href="authentication/login" style="color: white; font-weight: bold;">Login</a>
+            <a href="login" style="color: white; font-weight: bold;">Login</a>
             <span style="color: white; font-weight: bold;"> | </span>
-            <a href="authentication/register" style="color: white; font-weight: bold;">Register</a>
+            <a href="register" style="color: white; font-weight: bold;">Register</a>
         </div>
     </NotAuthorized>
 </AuthorizeView>
