@@ -70,9 +70,4 @@ main {
         text-align: right;
         width: 0;
     }
-
-    .top-row, article {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-    }
 }
