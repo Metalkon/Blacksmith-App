@@ -1,16 +1,30 @@
 ﻿@page "/testpage"
-@inject HttpClient client
+@inject HttpClientTokenService client
 
 <PageTitle>Test Page</PageTitle>
 
-<div>
-    <div><b>Enter Potato Name:</b></div>
-    <input type="text" style="width: 25%;" @bind="input">
-    <button class="btn btn-primary" @onclick="@(() => SendRequest())">Send</button>
-</div>
-<div>
-    @message
-</div>
+<main class="d-flex justify-content-center align-items-center h-75 ">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-10 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body m-sm-4">
+                        <div class="mb-3">
+                            <label class="form-label">Potato Name:</label>
+                            <input class="form-control form-control-lg" type="text" placeholder="Enter a potato name" @bind-value="input" />
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" @onclick="@(() => SendRequest())">Login</button>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span style="color: red; font-size: 12px;">@message</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
 @code {
     private TestPotato testPotato = new TestPotato();

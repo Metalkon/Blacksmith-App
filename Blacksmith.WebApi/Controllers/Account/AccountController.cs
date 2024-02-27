@@ -4,7 +4,6 @@ using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Controllers.Account
 {
@@ -24,13 +23,13 @@ namespace Blacksmith.WebApi.Controllers.Account
         // Confirm valid refresh token and then return a new jwt.
         [AllowAnonymous]
         [HttpPost("refresh")]
-        public async Task<ActionResult<string>> RefreshTokenConfirmation(TokenDTO refreshToken)
+        public async Task<ActionResult<string>> RefreshTokenConfirmation([FromBody] string refreshToken)
         {
-            if (!ModelState.IsValid || string.IsNullOrEmpty(refreshToken.RefreshToken))
+            if (!ModelState.IsValid || string.IsNullOrEmpty(refreshToken))
             {
                 return BadRequest("Invalid Request");
             }
-            RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken.RefreshToken);
+            RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken);
 
             if (savedToken == null)
             {

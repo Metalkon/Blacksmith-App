@@ -24,7 +24,7 @@ namespace Blacksmith.WebApi.Services
             var refreshToken = new RefreshToken
             {
                 Token = Guid.NewGuid().ToString("N"),
-                TokenExp = DateTime.Now.AddDays(30),
+                TokenExp = DateTime.UtcNow.AddDays(7),
                 User = user
             };
             _db.RefreshTokens.Add(refreshToken);
@@ -37,7 +37,6 @@ namespace Blacksmith.WebApi.Services
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            int expires = 15;
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
@@ -48,7 +47,7 @@ namespace Blacksmith.WebApi.Services
                 issuer: _config["JwtSettings:Issuer"],
                 audience: _config["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expires),
+                expires: DateTime.UtcNow.AddMinutes(15),
                 signingCredentials: credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
