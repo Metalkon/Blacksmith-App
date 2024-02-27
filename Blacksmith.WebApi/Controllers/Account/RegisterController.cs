@@ -39,8 +39,8 @@ namespace Blacksmith.WebApi.Controllers.Account
                 if (user != null)
                 {
                     if (user.AccountStatus.Validated == true 
-                        || (registerRequest.Email == user.Email && registerRequest.Username != user.Username)
-                        || (registerRequest.Email != user.Email && registerRequest.Username == user.Username))
+                        || (registerRequest.Email.ToLower() == user.Email.ToLower() && registerRequest.Username.ToLower() != user.Username.ToLower())
+                        || (registerRequest.Email.ToLower() != user.Email.ToLower() && registerRequest.Username.ToLower() == user.Username.ToLower()))
                     {
                         return BadRequest("Email or Username has already been taken");
                     }
@@ -55,7 +55,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest($"You are unable to attempt to register again so soon again after your previous attempt");
                     }
-                    if (user.AccountStatus.Validated == false)
+                    if (user.AccountStatus.Validated == false && registerRequest.Email.ToLower() == user.Email.ToLower() && registerRequest.Username.ToLower() == user.Username.ToLower())
                     {
                         user.Email = registerRequest.Email;
                         user.Username = registerRequest.Username;
@@ -126,10 +126,11 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("The time to confirm your email address has expired, please try registering again");
                     }
-                    if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+                    if (user.AccountStatus.Validated == false)
                     {
                         user.AccountStatus.Validated = true;
                         user.AccountStatus.Status = "Active";
+                        user.LoginCodeExp = DateTime.UtcNow;
                         user.LoginStatus.Status = "Active";
                         user.LoginStatus.LoginAttempts = 0;
                         user.UpdatedAt = DateTime.UtcNow;

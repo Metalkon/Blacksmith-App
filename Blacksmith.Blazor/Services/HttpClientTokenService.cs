@@ -130,10 +130,9 @@ namespace Blacksmith.Blazor.Services
 
         async Task Logout()
         {
-            Console.WriteLine("notice: logged out");
-            //await _localStorage.RemoveItemAsync("token");
-            //await _localStorage.RemoveItemAsync("refreshtoken");
-            //await _localStorage.RemoveItemAsync("refreshexpiry");
+            await _localStorage.RemoveItemAsync("token");
+            await _localStorage.RemoveItemAsync("refreshtoken");
+            await _localStorage.RemoveItemAsync("refreshexpiry");
             await _authStateProvider.GetAuthenticationStateAsync();
         }
     }

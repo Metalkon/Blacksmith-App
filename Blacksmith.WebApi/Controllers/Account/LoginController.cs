@@ -37,8 +37,8 @@ namespace Blacksmith.WebApi.Controllers.Account
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() || x.Username.ToLower() == loginRequest.Username.ToLower());
                 if (user != null)
                 {
-                    if ((loginRequest.Email == user.Email && loginRequest.Username != user.Username)
-                        || (loginRequest.Email != user.Email && loginRequest.Username == user.Username))
+                    if ((loginRequest.Email.ToLower() == user.Email.ToLower() && loginRequest.Username.ToLower() != user.Username.ToLower())
+                        || (loginRequest.Email.ToLower() != user.Email.ToLower() && loginRequest.Username.ToLower() == user.Username.ToLower()))
                     {
                         return BadRequest("Incorrect Email or Username");
                     }
@@ -65,7 +65,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("Access Denied: Your account has not been validated. Please check your email for verification instructions.");
                     }
-                    if (user.AccountStatus.Validated == true && user.Email == loginRequest.Email && user.Username == loginRequest.Username)
+                    if (user.AccountStatus.Validated == true && user.Email.ToLower() == loginRequest.Email.ToLower() && user.Username.ToLower() == loginRequest.Username.ToLower())
                     {
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
@@ -131,9 +131,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("Incorrect Code");
                     }
-                    if (user.Email == userConfirm.User.Email && user.Username == userConfirm.User.Username && user.LoginCode == userConfirm.Code)
+                    if (user.AccountStatus.Validated == true)
                     {
                         user.LoginCode = Guid.NewGuid().ToString();
+                        user.LoginCodeExp = DateTime.UtcNow;
                         user.LoginStatus.LoginAttempts = 0;
                         user.LoginStatus.Status = "Active";
 
@@ -159,7 +160,8 @@ namespace Blacksmith.WebApi.Controllers.Account
         private async Task<bool> SendEmailLogin(UserModel currentUser)
         {
             var subject = "Blacksmith App - Login Verification";
-            var message = $"To complete your login, click the link below (valid for 15 minutes):\n" +
+            var message = $"Welcome to Blacksmith Web App!\n\n" +
+                          $"To complete your login, click the link below (valid for 15 minutes):\n" +
                           $"https://localhost:8001/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;

@@ -31,6 +31,14 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
             RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken);
 
+            if (savedToken.User.AccountStatus.Status == "Banned")
+            {
+                return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
+            }
+            if (savedToken.User.AccountStatus.Status == "Suspended")
+            {
+                return StatusCode(403, $"Access Denied: Your login has been suspended until {savedToken.User.AccountStatus.StatusExp}.");
+            }
             if (savedToken == null)
             {
                 return BadRequest("Invalid Token");
