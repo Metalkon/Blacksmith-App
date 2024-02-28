@@ -15,16 +15,17 @@
                     <div class="col-sm-10 col-md-8 col-lg-6">
                         <div class="card">
                             <div class="card-body m-sm-4">
+                                <b><h3>Login</h3></b>
                                 <div class="mb-3">
                                     <label class="form-label">Username</label>
-                                    <input class="form-control form-control-lg" type="text" placeholder="Enter your username" @bind-value="user.Username" />
+                                    <input class="form-control form-control-lg" type="text" placeholder="Enter your Username" @bind-value="user.Username" />
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>
-                                    <input class="form-control form-control-lg" type="email" placeholder="Enter your email" @bind-value="user.Email" />
+                                    <input class="form-control form-control-lg" type="email" placeholder="Enter your Email" @bind-value="user.Email" />
                                 </div>
                                 <div class="text-center mt-3">
-                                    <button type="button" class="btn btn-primary" @onclick="@(() => SendEmail(user))">Login</button>
+                                    <button type="button" class="btn btn-primary" @onclick="@(() => SendEmail(user))">Submit</button>
                                 </div>
                             </div>
                         </div>
