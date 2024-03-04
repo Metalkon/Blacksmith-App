@@ -53,9 +53,22 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
                     }
-                    if (user.AccountStatus.Validated && user.LoginStatus.Status == "Locked")
+                    if (user.AccountStatus.Validated && user.LoginStatus.Status.Contains("Locked"))
                     {
-                        return StatusCode(403, "Access Denied: Login with this email address has been Locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the \"Unlock\" URL sent in the most recently sent email.");
+                        if (user.LoginStatus.Status == "Locked/Awaiting")
+                        {
+                            bool sendLockedEmail = await SendEmailLocked(user);
+                            if (sendLockedEmail == true)
+                            {
+                                user.LoginStatus.Status = "Locked";
+                                return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. An email has been sent containing an 'Unlock' URL if you wish to attempt to login again.");
+                            }
+                            else
+                            {
+                                return StatusCode(500, "Failed to send the email. Please try again later");
+                            }
+                        }
+                        return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the 'Unlock' URL sent in the most recently sent email.");
                     }
                     if (user.AccountStatus.Validated && user.LoginCodeExp >= DateTime.UtcNow)
                     {
@@ -163,6 +176,15 @@ namespace Blacksmith.WebApi.Controllers.Account
             var message = $"Welcome to Blacksmith Web App!\n\n" +
                           $"To complete your login, click the link below (valid for 15 minutes):\n" +
                           $"https://localhost:8001/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
+            bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
+            return sentEmail;
+        }
+
+        private async Task<bool> SendEmailLocked(UserModel currentUser)
+        {
+            var subject = "Blacksmith App - Account Has Been Locked";
+            var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
+                          $"https://localhost:8001/confirmation?confirmType=Locked&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatus.StatusCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

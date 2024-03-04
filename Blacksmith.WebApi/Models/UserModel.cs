@@ -73,7 +73,7 @@ namespace Blacksmith.WebApi.Models
             }
             if (user.LoginStatus.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow)
             {
-                user.LoginStatus.Status = "Locked";
+                user.LoginStatus.Status = "Locked/Awaiting";
             }
             return user;
         }
