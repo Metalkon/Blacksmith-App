@@ -65,13 +65,14 @@ namespace Blacksmith.WebApi.Models
             if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.StatusExp <= DateTime.UtcNow)
             {
                 user.AccountStatus.Status = "Active";
+                user.LoginStatus.LoginAttempts = 0;
             }
             // LoginStatus
             if (user.LoginStatus.Status == "Awaiting" && user.LoginCodeExp <= DateTime.UtcNow)
             {
                 user.LoginStatus.Status = "Active";
             }
-            if (user.LoginStatus.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow)
+            if (user.LoginStatus.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow && user.LoginStatus.Status.Contains("Locked") == false)
             {
                 user.LoginStatus.Status = "Locked/Awaiting";
             }
@@ -99,6 +100,7 @@ namespace Blacksmith.WebApi.Models
         public LoginStatus()
         {
             Status = "Awaiting";
+            LoginAttempts = 1;
         }
     }
 }

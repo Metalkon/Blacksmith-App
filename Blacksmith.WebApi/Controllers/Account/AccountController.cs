@@ -4,6 +4,7 @@ using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Controllers.Account
 {
@@ -49,6 +50,39 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
             string newJwt = await _tokenService.GenerateJwt(savedToken.User);
             return Ok(newJwt);
+        }
+
+        // Unlock a users email
+        [AllowAnonymous]
+        [HttpPost("unlock")]
+        public async Task<ActionResult<string>> UnlockConfirmation(UserConfirmDTO userConfirm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+            UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+
+            if (user != null) 
+            {
+                if (user.AccountStatus.Status == "Banned")
+                {
+                    return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
+                }
+                if (user.AccountStatus.Status == "Suspended")
+                {
+                    return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
+                }
+                if (user.LoginStatus.Status.Contains("Locked") && user.LoginStatus.StatusCode == userConfirm.Code)
+                {
+                    user.LoginStatus.Status = "Active";
+                    user.LoginStatus.StatusCode = null;
+                    user.LoginStatus.LoginAttempts = 0;
+                    await _db.SaveChangesAsync();
+                    return Ok("Your Email has been unlocked");
+                }
+            }
+            return BadRequest();
         }
     }
 }

@@ -30,9 +30,14 @@
         confirmType = query["confirmtype"];
         base.OnInitialized();
 
-        // Include check for logged in users
-
-        SendConfirmation(userConfirm, confirmType);
+        if (confirmType == "Login" || confirmType == "Register")
+        {
+            SendConfirmation(userConfirm, confirmType);
+        }
+        if (confirmType == "UnlockEmail")
+        {
+            SendConfirmationUnlock(userConfirm);            
+        }
     }
 
     private async Task SendConfirmation(UserConfirmDTO userConfirm, string confirmType)
@@ -41,10 +46,27 @@
 
         if (result.IsSuccessStatusCode)
         {
-            string tokenstring = await result.Content.ReadAsStringAsync();
-            TokenDTO tokens = JsonSerializer.Deserialize<TokenDTO>(tokenstring);
+            string tokenString = await result.Content.ReadAsStringAsync();
+            TokenDTO tokens = JsonSerializer.Deserialize<TokenDTO>(tokenString);
             await LocalStorage.SetItemAsync("refreshtoken", tokens.RefreshToken);
             await LocalStorage.SetItemAsync("token", tokens.Jwt);
+            await AuthStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            string error = await result.Content.ReadAsStringAsync();
+            message = $"ERROR: {error}";
+        }
+    }
+
+    private async Task SendConfirmationUnlock(UserConfirmDTO userConfirm)
+    {
+        HttpResponseMessage result = await client.PostAsJsonAsync($"https://localhost:8000/api/Account/unlock", userConfirm);
+
+        if (result.IsSuccessStatusCode)
+        {
+            string returnString = await result.Content.ReadAsStringAsync();
             await AuthStateProvider.GetAuthenticationStateAsync();
             NavigationManager.NavigateTo("/");
         }

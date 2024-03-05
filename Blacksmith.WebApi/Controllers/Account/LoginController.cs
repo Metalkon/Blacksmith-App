@@ -57,10 +57,12 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         if (user.LoginStatus.Status == "Locked/Awaiting")
                         {
+                            user.LoginStatus.Status = "Locked";
+                            user.LoginStatus.StatusCode = Guid.NewGuid().ToString();
                             bool sendLockedEmail = await SendEmailLocked(user);
                             if (sendLockedEmail == true)
                             {
-                                user.LoginStatus.Status = "Locked";
+                                await _db.SaveChangesAsync();
                                 return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. An email has been sent containing an 'Unlock' URL if you wish to attempt to login again.");
                             }
                             else
@@ -83,7 +85,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
                         user.LoginStatus.Status = "Awaiting";
-
+                        user.LoginStatus.LoginAttempts++;
                         await _db.SaveChangesAsync();
                         bool sendEmail = await SendEmailLogin(user);
 
@@ -184,7 +186,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith App - Account Has Been Locked";
             var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=Locked&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatus.StatusCode}";
+                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatus.StatusCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }
