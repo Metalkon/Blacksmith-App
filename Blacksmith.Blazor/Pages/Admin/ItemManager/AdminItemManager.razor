@@ -1,0 +1,40 @@
+﻿<h2 style="text-align:center; margin-bottom: 2%">Item Manager</h2>
+
+
+@if (pageState == "Table")
+{
+    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerTable />
+}
+@if (pageState == "Create")
+{
+    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerCreate />
+}
+@if (pageState == "Edit")
+{
+    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerEdit />
+}
+@if (pageState == "DisplayItem")
+{
+    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerDisplayItem />
+}
+
+@code {
+    private string pageState;
+    /*private string message;
+    private int pageNumber = 1;
+    private int pageSize = 5;
+    private string searchInput;
+    private string searchQuery = "";
+    private int pageId = 0;
+    private string req;
+    private List<int> pageHistory = new List<int>();
+    private ItemDTO createItem = new ItemDTO();
+    private ItemDTO editItem = new ItemDTO();*/
+    private List<ItemDTO> items = new List<ItemDTO>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        pageState = "Table";
+    }
+}

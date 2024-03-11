@@ -1,0 +1,83 @@
+﻿<div style="display: flex; padding-bottom: 10px; padding-top: 10px;">
+    <input id="nameInput" type="text" style="margin-right: 5px" />
+    <button class="btn btn-primary">Search</button>
+    <div style="flex: 1;"></div>
+    <button class="btn btn-primary" style="float: right;">Create Item</button>
+</div>
+<table class="table table-bordered table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Rarity</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th style="width: 1%">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in items)
+        {
+            <tr>
+                <td style="width: 1%;">
+                    @if (!string.IsNullOrEmpty(item.Image))
+                    {
+                        <img src="@item.Image">
+                    }
+                    else
+                    {
+                        <img src="~/image/icon/question_mark.jpg" alt="Question Mark" />
+                    }
+                </td>
+                <td style="width: 15%; vertical-align: middle;">@item.Name</td>
+                <td style="width: 15%; vertical-align: middle;">@item.Rarity</td>
+                <td style="width: 15%; vertical-align: middle;">@item.Price</td>
+                <td style="vertical-align: middle;">@item.Description</td>
+                <td style="width: 1%; vertical-align: middle;">
+                    <div class="text-center d-inline-flex">
+                        <!-- Edit/Delete Buttons -->
+                        <button class="btn btn-primary rounded" style="margin-right: 5px">Edit</button>
+                        <button class="btn btn-danger rounded">Delete</button>
+                        
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Pagination Buttons (Previous/Next) -->
+<div style="display: flex; justify-content: center; align-items: center;">
+    @if (1 > 1)
+    {
+        <a class="page-link">Previous</a>
+    }
+    else
+    {
+        <a class="page-link">Previous</a>
+    }
+    <a class="page-link">1</a>
+    @if (items.Count < 5)
+    {
+        <a class="page-link">Next</a>
+
+    }
+    else
+    {
+        <a class="page-link">Next</a>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<ItemDTO> items { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Test Item
+        items = new List<ItemDTO>
+        {
+            new ItemDTO() { ItemId = 0, Name = "Hammer", Type = "Tool", Price = 0, Quantity = 1, Tradable = false, Image = "./images/Icon/Other/en_craft_9.jpg" }
+        };
+    }
+}
+
