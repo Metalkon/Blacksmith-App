@@ -40,6 +40,7 @@ namespace Blacksmith.WebApi.Models
         public DateTime CreatedAt { get; set; }
         [Required]
         public DateTime UpdatedAt { get; set; }
+        public GameData Data { get; set; }
 
         public UserModel()
         {
@@ -50,6 +51,7 @@ namespace Blacksmith.WebApi.Models
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            Data = new GameData();
         }
 
         // Update the user after fetching it from the database
