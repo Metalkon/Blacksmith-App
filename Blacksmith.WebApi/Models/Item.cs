@@ -5,7 +5,9 @@ namespace Blacksmith.WebApi.Models
     public class Item
     {
         // Primary Properties
-
+        [Key]
+        [Required]
+        public int Id { get; set; }
         [Required]
         public int ItemId { get; set; }
         [Required]

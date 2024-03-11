@@ -15,6 +15,7 @@ namespace Blacksmith.WebApi.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<TestPotato> TestPotatoes { get; set; }
         public DbSet<GameData> GameData { get; set; }
+        public DbSet<Item> Items { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
