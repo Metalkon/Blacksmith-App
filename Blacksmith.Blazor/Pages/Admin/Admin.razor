@@ -1,22 +1,21 @@
 ﻿@page "/admin"
 <!-- attribute [Authorize] -->
 @inject HttpClientTokenService client
+@inject NavigationManager navigationManager
+
 <PageTitle>Admin</PageTitle>
 
-@if (pageState == "ItemManager")
-{
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.AdminItemManager />
-}
-@if (pageState == "UserManager")
-{
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.AdminUserManager />
-}
+<button @onclick="NavigateToItemManager">Item Manager</button>
+<button @onclick="NavigateToUserManager">User Manager</button>
 
 @code {
-    private string pageState;
-
-    protected override async Task OnInitializedAsync()
+    private void NavigateToItemManager()
     {
-        pageState = "ItemManager";
+        navigationManager.NavigateTo("/admin/itemmanager");
+    }
+
+    private void NavigateToUserManager()
+    {
+        navigationManager.NavigateTo("/admin/usermanager");
     }
 }

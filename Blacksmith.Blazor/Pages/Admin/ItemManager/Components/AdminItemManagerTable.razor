@@ -1,83 +1,188 @@
-﻿<div style="display: flex; padding-bottom: 10px; padding-top: 10px;">
-    <input id="nameInput" type="text" style="margin-right: 5px" />
-    <button class="btn btn-primary">Search</button>
-    <div style="flex: 1;"></div>
-    <button class="btn btn-primary" style="float: right;">Create Item</button>
-</div>
-<table class="table table-bordered table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Rarity</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th style="width: 1%">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in items)
-        {
-            <tr>
-                <td style="width: 1%;">
-                    @if (!string.IsNullOrEmpty(item.Image))
-                    {
-                        <img src="@item.Image">
-                    }
-                    else
-                    {
-                        <img src="~/image/icon/question_mark.jpg" alt="Question Mark" />
-                    }
-                </td>
-                <td style="width: 15%; vertical-align: middle;">@item.Name</td>
-                <td style="width: 15%; vertical-align: middle;">@item.Rarity</td>
-                <td style="width: 15%; vertical-align: middle;">@item.Price</td>
-                <td style="vertical-align: middle;">@item.Description</td>
-                <td style="width: 1%; vertical-align: middle;">
-                    <div class="text-center d-inline-flex">
-                        <!-- Edit/Delete Buttons -->
-                        <button class="btn btn-primary rounded" style="margin-right: 5px">Edit</button>
-                        <button class="btn btn-danger rounded">Delete</button>
-                        
-                    </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-<!-- Pagination Buttons (Previous/Next) -->
-<div style="display: flex; justify-content: center; align-items: center;">
-    @if (1 > 1)
-    {
-        <a class="page-link">Previous</a>
-    }
-    else
-    {
-        <a class="page-link">Previous</a>
-    }
-    <a class="page-link">1</a>
-    @if (items.Count < 5)
-    {
-        <a class="page-link">Next</a>
+﻿@inject HttpClientTokenService client
 
-    }
-    else
-    {
-        <a class="page-link">Next</a>
-    }
-</div>
+@if (pageState == "Loading")
+{
+    <LoadingComponent Message="Item Manager"></LoadingComponent>
+}
+@if (pageState == "Error")
+{
+    <ErrorComponent Message="@message"></ErrorComponent>
+}
+@if (pageState == "Active")
+{
+    <h2 style="text-align:center;">Item Manager</h2>
+
+    // Search Query Input Box/Button
+    <div style="display: flex; padding-bottom: 10px; padding-top: 10px;">
+        <input id="nameInput" type="text" style="margin-right: 5px" @bind-value="pagination.SearchQuery" />
+        <button class="btn btn-primary" @onclick="@(() => NameSearch())">Search</button>
+        <div style="flex: 1;"></div>
+        <button class="btn btn-primary" style="float: right;" @onclick="@CreateItem">Create Item</button>
+    </div>
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Id(ItemId)</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Tradable</th>
+                <th style="width: 1%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td style="width: 1%;">
+                        @if (!string.IsNullOrEmpty(item.Image))
+                        {
+                            <img src="@item.Image">
+                        }
+                        else
+                        {
+                            <img src="~/image/icon/question_mark.jpg" alt="Question Mark" />
+                        }
+                    </td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Id (#@item.ItemId)</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Name</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Type</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Price</td>
+                    <td style="width: 20%; vertical-align: middle;">
+                        @{ string tradableStatus = item.Tradable ? "Yes" : "No"; }
+                        @tradableStatus
+                    </td>
+                    <td style="width: 1%; vertical-align: middle;">
+                        <div class="text-center d-inline-flex">
+                            <!-- Edit/Delete Buttons -->
+                            <button class="btn btn-primary rounded" style="margin-right: 5px" @onclick="@( () => EditItem(item) )">Edit</button>
+                            <button class="btn btn-danger rounded" @onclick="@( () => DeleteItem(item.Id) )">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (pageState != "Loading")
+{
+    <!-- Pagination Buttons (Previous/Next) -->
+    <div style="display: flex; justify-content: center; align-items: center;">
+        @if (pagination.PageNumber > 1)
+        {
+            <a class="page-link" @onclick="PreviousPage">Previous</a>
+        }
+        else
+        {
+            <a class="page-link">Previous</a>
+        }
+        <a class="page-link">@pagination.PageNumber</a>
+        @if (items.Count < 5)
+        {
+            <a class="page-link">Next</a>
+        }
+        else
+        {
+            <a class="page-link" @onclick="NextPage">Next</a>
+        }
+    </div>
+}
 
 @code {
     [Parameter]
-    public List<ItemDTO> items { get; set; }
+    public EventCallback<string> ChangeState { get; set; }
+
+    [Parameter]
+    public EventCallback<ItemDTO> TransferItem { get; set; }
+
+    public string message;
+    public string pageState;
+    public List<ItemDTO> items = new List<ItemDTO>();
+    public PaginationDTO pagination = new PaginationDTO() { PageNumber = 1, PageSize = 5, LastItemId = 0, SearchQuery = "" };
 
     protected override async Task OnInitializedAsync()
     {
-        // Test Item
-        items = new List<ItemDTO>
+        pageState = "Loading";
+        await ItemSearch();
+    }
+
+    // Input Search Query
+    private async Task NameSearch()
+    {
+        pagination.PageNumber = 1;
+        pagination.LastItemId = 0;
+        await ItemSearch();
+    }
+
+    // Item Table Search
+    public async Task ItemSearch()
+    {
+        try
         {
-            new ItemDTO() { ItemId = 0, Name = "Hammer", Type = "Tool", Price = 0, Quantity = 1, Tradable = false, Image = "./images/Icon/Other/en_craft_9.jpg" }
+            ItemManagerResponseDTO result = await client.GetFromJsonAsync<ItemManagerResponseDTO>($"https://localhost:8000/api/AdminItem?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}&searchQuery={pagination.SearchQuery}&lastItemId={pagination.LastItemId}");
+            if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
+            {
+                items = result.Data;
+                pagination.LastItemId = result.LastItemId;
+                pageState = "Active";
+            }          
+            else
+            {
+                pageState = "Error";
+                message = "The requested table or it's contents returned as null/empty.";
+            }
+        }
+        catch (Exception ex)
+        {
+            pageState = "Error";
+            message = ex.Message;
+        }
+    }
+
+    // Edit Item
+    private async Task EditItem(ItemDTO editItem)
+    {
+        await TransferItem.InvokeAsync(editItem);
+        await ChangeState.InvokeAsync("Edit");
+    }
+
+    // Create Item
+    private async Task CreateItem()
+    {
+        ItemDTO newItem = new ItemDTO()
+        {
+            Id = 0,
+            ItemId = 0,
+            Name = "",
+            Type = "",
+            Price = 0,
+            Quantity = 1,
+            Image = "./images/Icon/question_mark.jpg"
         };
+        await TransferItem.InvokeAsync(newItem);
+        await ChangeState.InvokeAsync("Create");
+    }
+
+    // Delete Item
+    private async Task DeleteItem(int id)
+    {
+        await client.DeleteAsync($"https://localhost:8000/api/AdminItem/{id}");
+        await ItemSearch();
+    }
+
+    // Pagination (Previous)
+    private async Task PreviousPage()
+    {
+        pagination.PageNumber--;
+        await ItemSearch();
+    }
+
+    // Pagination (Next)
+    private async Task NextPage()
+    {
+        pagination.PageNumber++;
+        await ItemSearch();
     }
 }
-

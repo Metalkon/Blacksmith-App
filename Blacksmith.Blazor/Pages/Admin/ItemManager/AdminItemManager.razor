@@ -1,40 +1,50 @@
-﻿<h2 style="text-align:center; margin-bottom: 2%">Item Manager</h2>
-
+﻿@page "/admin/itemmanager"
+@inject HttpClientTokenService client
+@using Blacksmith.Blazor.Pages.Admin.ItemManager.Components;
 
 @if (pageState == "Table")
 {
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerTable />
+    <AdminItemManagerTable TransferItem="TransferItem" ChangeState="ChangeState"></AdminItemManagerTable>
 }
 @if (pageState == "Create")
 {
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerCreate />
+    <AdminItemManagerCreate CreateItem="@item" ChangeState="ChangeState" ItemSearch="ActivateItemSearch"></AdminItemManagerCreate>
 }
 @if (pageState == "Edit")
 {
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerEdit />
+    <AdminItemManagerEdit EditItem=@item ChangeState="ChangeState" ItemSearch="ActivateItemSearch"></AdminItemManagerEdit>
 }
 @if (pageState == "DisplayItem")
 {
-    <Blacksmith.Blazor.Pages.Admin.ItemManager.Components.AdminItemManagerDisplayItem />
+    <AdminItemManagerDisplayItem></AdminItemManagerDisplayItem>
 }
 
 @code {
-    private string pageState;
-    /*private string message;
-    private int pageNumber = 1;
-    private int pageSize = 5;
-    private string searchInput;
-    private string searchQuery = "";
-    private int pageId = 0;
-    private string req;
-    private List<int> pageHistory = new List<int>();
-    private ItemDTO createItem = new ItemDTO();
-    private ItemDTO editItem = new ItemDTO();*/
-    private List<ItemDTO> items = new List<ItemDTO>();
-
+    public string message;
+    public string pageState;
+    public ItemDTO item;
+    private AdminItemManagerTable ItemManager;
 
     protected override async Task OnInitializedAsync()
     {
         pageState = "Table";
+    }
+
+    public void TransferItem(ItemDTO value)
+    {
+        item = value;
+    }
+
+    public void ChangeState(string value)
+    {
+        pageState = value;
+    }
+
+    public async Task ActivateItemSearch()
+    {
+        if (ItemManager != null)
+        {
+            await ItemManager.ItemSearch();
+        }
     }
 }

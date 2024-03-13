@@ -4,7 +4,7 @@ namespace Shared_Classes.Models
     public class ItemDTO
     {
         // Primary Properties
-
+        public int Id { get; set; }
         public int ItemId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
