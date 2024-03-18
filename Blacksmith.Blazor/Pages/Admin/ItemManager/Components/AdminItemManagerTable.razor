@@ -7,6 +7,9 @@
 @if (pageState == "Error")
 {
     <ErrorComponent Message="@message"></ErrorComponent>
+    <div class="text-center mt-3">
+        <button type="button" class="btn btn-primary" @onclick="Return">Return</button>
+    </div>
 }
 @if (pageState == "Active")
 {
@@ -183,6 +186,13 @@
     private async Task NextPage()
     {
         pagination.PageNumber++;
+        await ItemSearch();
+    }
+
+    private async Task Return()
+    {
+        pageState = "Active";
+        pagination.SearchQuery = string.Empty;
         await ItemSearch();
     }
 }

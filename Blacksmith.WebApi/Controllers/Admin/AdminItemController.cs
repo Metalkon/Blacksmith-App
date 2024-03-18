@@ -7,6 +7,7 @@ using Shared_Classes.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using static System.Net.Mime.MediaTypeNames;
+using System.Security.Claims;
 
 // --------------------------
 // This is an outdated Item Controller from the old prototype project, it's been modified slightly but it will need to be overhauled.
@@ -16,6 +17,7 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class AdminItemController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -29,51 +31,45 @@ namespace Blacksmith.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<ItemManagerResponseDTO>> GetItems(int pageNumber, int pageSize, string? searchQuery, int lastItemId)
         {
-            if (pageNumber < 0 || pageSize < 0 || lastItemId < 0)
+            if (!ModelState.IsValid || pageSize == null || pageNumber == null || lastItemId == null)
             {
-                return BadRequest();
-            }
-            if (searchQuery != null && !Regex.IsMatch(searchQuery, @"^[a-zA-Z0-9\s]+$"))
-            {
-                return BadRequest();
+                return BadRequest("Invalid Request");
             }
 
-            // Check Values, Set Minimums
+            if (searchQuery != null && Regex.IsMatch(searchQuery, @"^[a-zA-Z0-9\s]+$") == false)
+            {
+                return BadRequest("Invalid characters");
+            }
+
+            // Check Values, Set Mini/Max
+            searchQuery = searchQuery == null ? string.Empty : searchQuery;
             pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-            pageSize = pageSize <= 0 ? 10 : pageSize;
+            pageSize = pageSize <= 0 ? 5 : pageSize;
             pageSize = pageSize > 100 ? 100 : pageSize;
 
-            IQueryable<Item> queryItem = _db.Items.AsQueryable();
+            List<Item> itemList = await _db.Items
+                .Where(x => x.Name.Contains(searchQuery))
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            // Search Query
-            if (searchQuery != null)
-            {
-                queryItem = queryItem.Where(item => item.Name.Contains(searchQuery));
-            }
-
-            // Pagination
-            queryItem = queryItem.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-
-            List<Item> items = await queryItem.ToListAsync();
-            if (items.Count == 0)
+            if (itemList.Count == 0 || itemList == null)
             {
                 return NotFound();
             }
-            var result = new ItemManagerResponseDTO
+
+            var result = new ItemManagerResponseDTO()
             {
-                LastItemId = items.Max(item => item.Id),
-                Data = items.Select(item => new ItemDTO
-                {
-                    Id = item.Id,
-                    ItemId = item.ItemId,
-                    Type = item.Type,
-                    Name = item.Name,
-                    Price = item.Price,
-                    Tradable = item.Tradable,
-                    Image = item.Image
-                }).ToList()
+                LastItemId = itemList.Max(item => item.Id),
+                Data = new List<ItemDTO>()
             };
-            return Ok(result);
+
+            foreach (Item item in itemList)
+            {
+                ItemDTO itemDto = await MapItemToDTO(item);
+                result.Data.Add(itemDto);
+            }
+            return result;
         }
 
         // Retrieves a single item by id as a JSON response.
@@ -81,58 +77,47 @@ namespace Blacksmith.WebApi.Controllers
         [Route("{id}")]
         public async Task<ActionResult<ItemDTO>> GetItemById(int id)
         {
-            Item itemGet = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
-            if (itemGet == null)
+            if (!ModelState.IsValid || id == null)
+            {
+                return BadRequest("Invalid Request");
+            }
+
+            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (item == null)
             {
                 return NotFound();
             }
-            var result = new ItemDTO()
-            {
-                Id = itemGet.Id,
-                ItemId = itemGet.ItemId,
-                Type = itemGet.Type,
-                Name = itemGet.Name,
-                Price = itemGet.Price,
-                Tradable = itemGet.Tradable,
-                Image = itemGet.Image
-            };
-            return Ok(result);
+
+            ItemDTO itemDto = await MapItemToDTO(item);
+
+            return Ok(itemDto);
         }
 
         // Creates a new database entry
         [HttpPost]
-        public async Task<ActionResult<ItemDTO>> CreateItem(ItemDTO item)
+        public async Task<ActionResult<ItemDTO>> CreateItem(ItemDTO itemDto)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || itemDto == null)
             {
                 return BadRequest();
             }
 
             // Check Values, Set Defaults
-            item.Name = item.Name == null ? "Untitled" : item.Name;
-            item.Description = item.Description == null ? "N/A" : item.Description;
-            item.Price = item.Price == null ? 0 : item.Price;
-            item.Rarity = item.Rarity == null ? "Common" : item.Rarity;
-            item.Image = item.Image == null ? "./images/Icon/Question_Mark.jpg" : item.Image;
+            itemDto.ItemId = itemDto.ItemId == null ? 0 : itemDto.ItemId;
+            itemDto.Name = string.IsNullOrEmpty(itemDto.Name) ? "Untitled" : itemDto.Name;
+            itemDto.Type = string.IsNullOrEmpty(itemDto.Type) ? "None" : itemDto.Type;
+            itemDto.Quantity = (itemDto.Quantity == null || itemDto.Quantity == 0) ? 1 : itemDto.Quantity;
+            itemDto.Price = itemDto.Price == null ? 0 : itemDto.Price;
+            itemDto.Tradable = itemDto.Tradable == null ? false : itemDto.Tradable;
+            itemDto.Image = itemDto.Image == null ? "./images/Icon/Question_Mark.jpg" : itemDto.Image;
 
-            var newItem = new Item()
-            {
-                Id = item.Id,
-                ItemId = item.ItemId,
-                Type = item.Type,
-                Name = item.Name,
-                Price = item.Price,
-                Tradable = item.Tradable,
-                Image = item.Image
-            };
+            Item newItem = await MapDTOToItem(itemDto);
+
             _db.Items.Add(newItem);
             await _db.SaveChangesAsync();
-            var newItemDTO = new ItemDTO()
-            {
-                Id = newItem.Id,
-                Name = newItem.Name
-            };
-            return CreatedAtAction(nameof(GetItemById), new { id = newItemDTO.Id }, newItemDTO);
+
+            return Ok(MapItemToDTO(newItem));
         }
 
         // Deletes a single item entry by id.
@@ -140,53 +125,125 @@ namespace Blacksmith.WebApi.Controllers
         [Route("{id}")]
         public async Task<ActionResult<ItemDTO>> DeleteItemById(int id)
         {
-            Item result = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
-            if (result == null)
+            if (!ModelState.IsValid || id == null)
+            {
+                return BadRequest();
+            }
+
+            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (item == null)
             {
                 return NotFound();
             }
-            _db.Items.Remove(result);
+            _db.Items.Remove(item);
             await _db.SaveChangesAsync();
             return NoContent();
         }
 
         // Updates a single item entry by id.
         [HttpPut]
-        public async Task<ActionResult<ItemDTO>> UpdateItemById(ItemDTO item)
+        public async Task<ActionResult<ItemDTO>> UpdateItemById(ItemDTO itemDto)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || itemDto == null)
             {
                 return BadRequest();
             }
-            Item existingItem = await _db.Items.FindAsync(item.Id);
+
+            Item existingItem = await _db.Items.FindAsync(itemDto.Id);
             if (existingItem == null)
             {
                 return NotFound();
             }
-
-            // Check Values, Set Defaults
-            item.Name = item.Name == null ? "Untitled" : item.Name;
-            item.Description = item.Description == null ? "N/A" : item.Description;
-            item.Price = item.Price == null ? 0 : item.Price;
-            item.Rarity = item.Rarity == null ? "Common" : item.Rarity;
-            item.Image = item.Image == null ? "./images/Icon/Question_Mark.jpg" : item.Image;
-
+            if (existingItem != null)
             {
-                existingItem.Id = item.Id;
-                existingItem.ItemId = item.ItemId;
-                existingItem.Type = item.Type;
-                existingItem.Name = item.Name;
-                existingItem.Price = item.Price;
-                existingItem.Tradable = item.Tradable;
-                existingItem.Image = item.Image;
+                existingItem = await MapDTOToItem(itemDto, existingItem);
+
+                // Check Values, Set Defaults
+                existingItem.ItemId = existingItem.ItemId == null ? 0 : existingItem.ItemId;
+                existingItem.Name = string.IsNullOrEmpty(existingItem.Name) ? "Untitled" : existingItem.Name;
+                existingItem.Type = string.IsNullOrEmpty(existingItem.Type) ? "None" : existingItem.Type;
+                existingItem.Quantity = (existingItem.Quantity == null || existingItem.Quantity == 0) ? 1 : existingItem.Quantity;
+                existingItem.Price = existingItem.Price == null ? 0 : existingItem.Price;
+                existingItem.Tradable = existingItem.Tradable == null ? false : existingItem.Tradable;
+                existingItem.Image = existingItem.Image == null ? "./images/Icon/Question_Mark.jpg" : existingItem.Image;
+
+                await _db.SaveChangesAsync();
+                return Ok(itemDto);
             }
-            await _db.SaveChangesAsync();
-            var updatedItem = new ItemDTO()
+            return BadRequest();
+        }
+        
+        private async Task<ItemDTO> MapItemToDTO(Item input)
+        {
+            ItemDTO item = new ItemDTO()
             {
-                Id = existingItem.Id,
-                Name = existingItem.Name
+                Id = input.Id,
+                ItemId = input.ItemId,
+                Type = input.Type,
+                Name = input.Name,
+                Price = input.Price,
+                Tradable = input.Tradable,
+                Image = input.Image,
+                Description = input.Description,
+                Quality = input.Quality,
+                Rarity = input.Rarity,
+                Weight = input.Weight,
+                Durability = input.Durability,
+                AttackPower = input.AttackPower,
+                AttackSpeed = input.AttackSpeed,
+                MagicPower = input.MagicPower,
+                ProtectionPhysical = input.ProtectionPhysical,
+                ProtectionMagical = input.ProtectionMagical
             };
-            return Ok(updatedItem);
+            return item;
+        }
+
+        private async Task<Item> MapDTOToItem(ItemDTO input)
+        {
+            Item item = new Item()
+            {
+                Id = input.Id,
+                ItemId = input.ItemId,
+                Type = input.Type,
+                Name = input.Name,
+                Price = input.Price,
+                Tradable = input.Tradable,
+                Image = input.Image,
+                Description = input.Description,
+                Quality = input.Quality,
+                Rarity = input.Rarity,
+                Weight = input.Weight,
+                Durability = input.Durability,
+                AttackPower = input.AttackPower,
+                AttackSpeed = input.AttackSpeed,
+                MagicPower = input.MagicPower,
+                ProtectionPhysical = input.ProtectionPhysical,
+                ProtectionMagical = input.ProtectionMagical
+            };
+            return item;
+        }
+
+        private async Task<Item> MapDTOToItem(ItemDTO input, Item itemDb)
+        {
+            itemDb.Id = input.Id;
+            itemDb.ItemId = input.ItemId;
+            itemDb.Type = input.Type;
+            itemDb.Name = input.Name;
+            itemDb.Price = input.Price;
+            itemDb.Tradable = input.Tradable;
+            itemDb.Image = input.Image;
+            itemDb.Description = input.Description;
+            itemDb.Quality = input.Quality;
+            itemDb.Rarity = input.Rarity;
+            itemDb.Weight = input.Weight;
+            itemDb.Durability = input.Durability;
+            itemDb.AttackPower = input.AttackPower;
+            itemDb.AttackSpeed = input.AttackSpeed;
+            itemDb.MagicPower = input.MagicPower;
+            itemDb.ProtectionPhysical = input.ProtectionPhysical;
+            itemDb.ProtectionMagical = input.ProtectionMagical;
+            return itemDb;
         }
     }
 }
