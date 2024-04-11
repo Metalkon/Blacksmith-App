@@ -1,7 +1,7 @@
 ﻿@page "/admin"
-<!-- attribute [Authorize] -->
-@inject HttpClientTokenService client
-@inject NavigationManager navigationManager
+@inherits BaseComponent
+@using Blacksmith.Blazor.Pages.Admin.ItemManager.Components;
+@using Blacksmith.Blazor.Pages.Admin.UserManager.Components;
 
 <PageTitle>Admin</PageTitle>
 

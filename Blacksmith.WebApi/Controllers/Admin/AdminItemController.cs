@@ -69,7 +69,7 @@ namespace Blacksmith.WebApi.Controllers
                 ItemDTO itemDto = await MapItemToDTO(item);
                 result.Data.Add(itemDto);
             }
-            return result;
+            return Ok(result);
         }
 
         // Retrieves a single item by id as a JSON response.

@@ -122,26 +122,19 @@
     // Item Table Search
     public async Task ItemSearch()
     {
-        try
+        var response = await client.GetAsync($"https://localhost:8000/api/AdminItem?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}&searchQuery={pagination.SearchQuery}&lastItemId={pagination.LastItemId}");
+        var result = await response.Content.ReadFromJsonAsync<ItemManagerResponseDTO>();
+        if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
         {
-            ItemManagerResponseDTO result = await client.GetFromJsonAsync<ItemManagerResponseDTO>($"https://localhost:8000/api/AdminItem?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}&searchQuery={pagination.SearchQuery}&lastItemId={pagination.LastItemId}");
-            if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
-            {
-                items = result.Data;
-                pagination.LastItemId = result.LastItemId;
-                pageState = "Active";
-            }          
-            else
-            {
-                pageState = "Error";
-                message = "The requested table or it's contents returned as null/empty.";
-            }
+            items = result.Data;
+            pagination.LastItemId = result.LastItemId;
+            pageState = "Active";
         }
-        catch (Exception ex)
+        else
         {
             pageState = "Error";
-            message = ex.Message;
-        }
+            message = "The requested table or it's contents returned as null/empty.";
+        }        
     }
 
     // Edit Item
