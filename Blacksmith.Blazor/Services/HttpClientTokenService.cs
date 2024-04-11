@@ -22,47 +22,51 @@ namespace Blacksmith.Blazor.Services
             _navigationManager = navigationManager; 
         }
 
-        public async Task<T> GetAsync<T>(string url)
+        public async Task<HttpResponseMessage> GetAsync(string url)
         {
             try
             {
                 await CheckToken();
-                var response = await _httpClient.GetFromJsonAsync<HttpResponseMessage>(url);
+                var response = await _httpClient.GetAsync(url);
                 await CheckStatus(response);
-                return await response.Content.ReadFromJsonAsync<T>();
+                return response;
             }
             catch (Exception ex)
             {
+                await ErrorRedirect(ex.Message);
                 throw new Exception($"ERROR: {ex.Message}");
             }
         }
 
-        internal async Task<T> PutAsync<T, TData>(string url, TData data)
+        internal async Task<HttpResponseMessage> PutAsync<T, TData>(string url, TData data)
         {
             try
             {
                 await CheckToken();
                 var response = await _httpClient.PutAsJsonAsync(url, data);
                 await CheckStatus(response);
-                return await response.Content.ReadFromJsonAsync<T>();
+                return response;
             }
             catch (Exception ex)
             {
+                await ErrorRedirect(ex.Message);
                 throw new Exception($"ERROR: {ex.Message}");
+
             }
         }
 
-        internal async Task<T> PostAsync<T, TData>(string url, TData data)
+        internal async Task<HttpResponseMessage> PostAsync<T, TData>(string url, TData data)
         {
             try
             {
                 await CheckToken();
                 var response = await _httpClient.PostAsJsonAsync(url, data);
                 await CheckStatus(response);
-                return await response.Content.ReadFromJsonAsync<T>();
+                return response;
             }
             catch (Exception ex)
             {
+                await ErrorRedirect(ex.Message);
                 throw new Exception($"ERROR: {ex.Message}");
             }
         }
@@ -78,6 +82,7 @@ namespace Blacksmith.Blazor.Services
             }
             catch (Exception ex)
             {
+                await ErrorRedirect(ex.Message);
                 throw new Exception($"ERROR: {ex.Message}");
             }
         }
@@ -92,10 +97,16 @@ namespace Blacksmith.Blazor.Services
             else
             {
                 string error = await httpResponse.Content.ReadAsStringAsync();
-                await _localStorage.SetItemAsync("error", error);
-                _navigationManager.NavigateTo($"/error");
-                throw new Exception(error);
+                await ErrorRedirect(error);
+                throw new Exception($"ERROR: {error}");
             }
+        }
+
+        // Redirect to error page
+        private async Task ErrorRedirect(string error)
+        {
+            await _localStorage.SetItemAsync("error", error);
+            _navigationManager.NavigateTo($"/error");
         }
 
         // Check if a jwt is expired and request a new one
