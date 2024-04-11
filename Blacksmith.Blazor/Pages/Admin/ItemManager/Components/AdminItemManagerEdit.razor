@@ -83,35 +83,23 @@
     // Save Edited Item
     private async Task EditItemSave()
     {
-        try
+        if (EditItem.ItemId == null || EditItem.Price == null || EditItem.Tradable == null || EditItem.Quantity == null
+        || string.IsNullOrEmpty(EditItem.Name) || string.IsNullOrEmpty(EditItem.Type) || string.IsNullOrEmpty(EditItem.Image))
         {
-            if (EditItem.ItemId == null
-            || EditItem.Price == null
-            || EditItem.Tradable == null
-            || EditItem.Quantity == null
-            || string.IsNullOrEmpty(EditItem.Name)
-            || string.IsNullOrEmpty(EditItem.Type)
-            || string.IsNullOrEmpty(EditItem.Image))
-            {
-                return;
-            }
-            var response = await client.PutAsJsonAsync("https://localhost:8000/api/AdminItem", EditItem);
-            if (response.IsSuccessStatusCode)
-            {
-                pageState = "Active";
-                await ReturnToTable();
-            }
-            else
-            {
-                pageState = "Error";
-                message = "There was an issue with editing the item";
-            }
+            return;
         }
-        catch (Exception ex)
+
+        var response = await client.PutAsync<string, ItemDTO>("https://localhost:8000/api/AdminItem", EditItem);
+        if (response.IsSuccessStatusCode)
+        {
+            pageState = "Active";
+            await ReturnToTable();
+        }
+        else
         {
             pageState = "Error";
-            message = ex.Message;
-        }    
+            message = "There was an issue with editing the item";
+        }        
     }
 
     private async Task ReturnToTable()

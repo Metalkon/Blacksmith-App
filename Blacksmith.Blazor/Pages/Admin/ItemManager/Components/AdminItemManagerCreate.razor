@@ -83,35 +83,23 @@
     // Save Edited Item
     private async Task CreateItemSave()
     {
-        try
+        if (CreateItem.ItemId == null || CreateItem.Price == null || CreateItem.Tradable == null || CreateItem.Quantity == null
+        || string.IsNullOrEmpty(CreateItem.Name) || string.IsNullOrEmpty(CreateItem.Type) || string.IsNullOrEmpty(CreateItem.Image))
         {
-            if (CreateItem.ItemId == null
-            || CreateItem.Price == null
-            || CreateItem.Tradable == null
-            || CreateItem.Quantity == null
-            || string.IsNullOrEmpty(CreateItem.Name)
-            || string.IsNullOrEmpty(CreateItem.Type)
-            || string.IsNullOrEmpty(CreateItem.Image))
-            {
-                return;
-            }
-            var response = await client.PostAsJsonAsync("https://localhost:8000/api/AdminItem", CreateItem);
-            if (response.IsSuccessStatusCode)
-            {
-                pageState = "Active";
-                await ReturnToTable();
-            }
-            else
-            {
-                pageState = "Error";
-                message = "There was an issue with creating the item";
-            }
+            return;
         }
-        catch (Exception ex)
+
+        var response = await client.PostAsync<string, ItemDTO>("https://localhost:8000/api/AdminItem", CreateItem);
+        if (response.IsSuccessStatusCode)
+        {
+            pageState = "Active";
+            await ReturnToTable();
+        }
+        else
         {
             pageState = "Error";
-            message = ex.Message;
-        }
+            message = "There was an issue with creating the item";
+        }        
     }
 
     private async Task ReturnToTable()
