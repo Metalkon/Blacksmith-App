@@ -1,0 +1,20 @@
+﻿@page "/error"
+@inject ILocalStorageService LocalStorage
+
+<PageTitle>Error</PageTitle>
+
+<img src="./images/KnightFall.gif" alt="Image" style="display: block; margin: 0 auto;" />
+<p style="text-align:center;">ERROR: @ErrorMessage</p>
+<div class="text-center mt-3">
+    <button type="button" onclick="window.history.back()" class="btn btn-primary btn-rounded">Back</button>
+</div>
+
+@code {
+    public string ErrorMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ErrorMessage = await LocalStorage.GetItemAsStringAsync("error");
+        await LocalStorage.RemoveItemAsync("error");
+    }
+}

@@ -1,0 +1,9 @@
+﻿@attribute [Authorize]
+
+@code {
+    [Inject]
+    protected NavigationManager navigationManager { get; set; } = default!;
+
+    [Inject]
+    protected HttpClientTokenService client { get; set; } = default!;
+}
