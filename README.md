@@ -19,6 +19,9 @@ The project is still a work in progress but it has a custom passwordless jwt aut
 - The authentication state is handled by a "CustomAuthStateProvider" which was picked up from someone else's project as i'm not familiar with this part of auth in blazor yet.
 - The majority of http requests are made through the "HttpClientTokenService" service class, which replaces HttpClient in pages/services and acts as a middleman service that checks for jwt expiry before each http request using HttpClient itself. When the jwt is expired it sends the refresh token to the Account Controller where it is confirmed to be valid before sending in a new jwt. If the refresh token is expired or the user account is suspended/banned then a jwt will not be sent to the Blazor client and the user is logged off.
 
+**Notes:**
+- Aside from the authentication system there is a CRUD item management page currently in this incomplete app, using the AdminItemController in the backend, and various components in the Admin page folder within the client app. A user management page will be added shortly after some salt and hash changes have been made to how users are saved in the database.
+
 ### Blacksmith Game
 - I will begin working on the crafting game shortly and it may take awhile to complete.
 
