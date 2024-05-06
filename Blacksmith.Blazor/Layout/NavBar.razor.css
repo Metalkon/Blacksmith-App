@@ -1,17 +1,15 @@
-﻿.container {
+﻿.container-fluid {
     display: grid;
     grid-template-rows: 32px;
-    grid-template-columns: min-content min-content min-content auto;
+    grid-template-columns: min-content min-content min-content auto min-content;
     grid-gap: 20px 20px;
     height: 32px;
     width: 100%;
-    border: 1px solid black;
 }
 
 .item {
     display: flex;
     align-items: center;
-    border: 1px solid red;
 }
 
 .level {
