@@ -1,7 +1,7 @@
 ﻿.container {
     display: grid;
-    grid-template-rows: 400px 100px;
-    grid-template-columns: 320px 320px 320px;
+    grid-template-rows: 250px 250px;
+    grid-template-columns: 490px 490px;
     grid-gap: 20px 20px;
     width: 1000px;
     height: 520px;
@@ -11,22 +11,22 @@
     border: 1px solid black;
 }
 
-.materials {
+.top-left {
     grid-row: 1 / span 1;
     grid-column: 1 / span 1;
 }
 
-.recipes {
+.top-right {
     grid-row: 1 / span 1;
     grid-column: 2 / span 1;
 }
 
-.crafting {
-    grid-row: 1 / span 1;
-    grid-column: 3 / span 1;
+.bottom-left {
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
 }
 
-.history {
+.bottom-right {
     grid-row: 2 / span 1;
-    grid-column: 1 / span 3;
+    grid-column: 2 / span 1;
 }
