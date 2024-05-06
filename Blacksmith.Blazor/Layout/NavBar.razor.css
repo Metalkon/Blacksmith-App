@@ -1,0 +1,33 @@
+﻿.container-fluid {
+    display: grid;
+    grid-template-rows: 32px;
+    grid-template-columns: min-content min-content min-content auto min-content;
+    grid-gap: 20px 20px;
+    height: 32px;
+    width: 100%;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+}
+
+.level {
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.schematics {
+    grid-row: 1 / span 1;
+    grid-column: 2 / span 1;
+}
+
+.gold {
+    grid-row: 1 / span 1;
+    grid-column: 3 / span 1;
+}
+
+.other {
+    grid-row: 1 / span 1;
+    grid-column: 5 / span 1;
+}

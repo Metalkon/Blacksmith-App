@@ -1,0 +1,27 @@
+﻿.container {
+    display: grid;
+    grid-template-rows: 70px 430px;
+    grid-template-columns: repeat(5, 184px);
+    grid-gap: 20px 20px;
+    width: 1000px;
+    height: 520px;
+}
+
+.item {
+    border: 1px solid black;
+}
+
+.tab-buy {
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.tab-sell {
+    grid-row: 1 / span 1;
+    grid-column: 2 / span 1;
+}
+
+.all-items {
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 5;
+}

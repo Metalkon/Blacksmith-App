@@ -1,0 +1,19 @@
+﻿@page "/inventory"
+@inherits BaseComponent
+@using Blacksmith.Blazor.Pages.Inventory.Components;
+
+<PageTitle>Inventory</PageTitle>
+<div> <br /></div>
+<h2 style="text-align:center;">Inventory Page</h2>
+
+<div class="container">
+    <div class="item tab-materials">
+    </div>
+    <div class="item tab-crafted">
+    </div>
+    <div class="item tab-schematics">
+    </div>
+    <div class="item all-items">
+        <InventoryItemComponent></InventoryItemComponent>
+    </div>
+</div>

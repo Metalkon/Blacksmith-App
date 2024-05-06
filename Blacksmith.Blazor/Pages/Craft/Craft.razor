@@ -1,0 +1,23 @@
+﻿@page "/craft"
+@inherits BaseComponent
+@using Blacksmith.Blazor.Pages.Craft.Components;
+
+
+<PageTitle>Crafting</PageTitle>
+<div> <br /></div>
+<h2 style="text-align:center;">Crafting Page</h2>
+
+<div class="container">
+    <div class="item materials">
+        <MaterialsComponent></MaterialsComponent>
+    </div>
+    <div class="item recipes">
+        <RecipesComponent></RecipesComponent>
+    </div>
+    <div class="item crafting">
+        <CraftComponent></CraftComponent>
+    </div>
+    <div class="item history">
+        <HistoryComponent></HistoryComponent>
+    </div>
+</div>
