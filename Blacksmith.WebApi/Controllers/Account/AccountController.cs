@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
+using System.Security.Claims;
 
 namespace Blacksmith.WebApi.Controllers.Account
 {
@@ -81,6 +82,29 @@ namespace Blacksmith.WebApi.Controllers.Account
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");
                 }
+            }
+            return BadRequest();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("PlayerData")]
+        public async Task<ActionResult<string>> PlayerDisplayData()
+        {
+            string userEmail = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            UserModel user = await _db.Users.Include(u => u.Data).SingleOrDefaultAsync(x => x.Email == userEmail);
+
+            if (user != null)
+            {
+                PlayerDataDTO playerData = new PlayerDataDTO()
+                {
+                    Username = user.Username ?? "N/A",
+                    Level = user.Data.Level,
+                    Experience = user.Data.Experience,
+                    Schematics = 1, //Schematics = user.Data.Inventory.Count(x => x.Type == "Schematic"),
+                    Gold = user.Data.Gold
+                };
+
+                return Ok(playerData);
             }
             return BadRequest();
         }
