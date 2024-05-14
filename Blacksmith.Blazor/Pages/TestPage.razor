@@ -14,7 +14,7 @@
                             <input class="form-control form-control-lg" type="text" placeholder="Enter a potato name" @bind-value="input" />
                         </div>
                         <div class="text-center mt-3">
-                            <button type="button" class="btn btn-primary" @onclick="@(() => SendRequest())">Login</button>
+                            <button type="button" class="btn btn-primary" @onclick="@(() => SendRequest())">Submit</button>
                             <button type="button" onclick="window.history.back()" class="btn btn-primary btn-rounded">Back</button>
                         </div>
                     </div>
@@ -22,6 +22,14 @@
                 <div style="margin-bottom: 10px;">
                     <span style="color: red; font-size: 12px;">@message</span>
                 </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-primary" @onclick="@(() => TestButton())">Test Button</button>
+                    <button type="button" class="btn btn-primary" @onclick="@(() => TestButton2())">Test Button2</button>
+
+                    <button type="button" onclick="window.history.back()" class="btn btn-primary btn-rounded">Back</button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -49,4 +57,9 @@
         StateHasChanged();
     }
 
+    private async Task TestButton()
+    {
+        playerData.UpdatePlayerData();
+        StateHasChanged();
+    }
 }

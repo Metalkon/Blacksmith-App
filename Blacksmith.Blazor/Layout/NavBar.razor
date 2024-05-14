@@ -1,26 +1,38 @@
-﻿<AuthorizeView>
+﻿@inherits BaseComponent
+
+<AuthorizeView>
     <Authorized>
-
-        <div class="container-fluid">
-            <div class="item level">
-                <img src="./images/icon/level.png" style="height: 32px;" />
-                <b>Level: </b> 9
+        @if (displayData == true)
+        {
+            <div class="container-fluid">
+                <div class="item level">
+                    <img src="./images/icon/level.png" style="height: 32px;" />
+                    <b>Level: </b> @playerData.Level
+                </div>
+                <div class="item schematics">
+                    <img src="./images/icon/schematic.png" style="height: 32px;" />
+                    <b>Schematics: </b> @playerData.Schematics
+                </div>
+                <div class="item gold">
+                    <img src="./images/icon/coins3.png" style="height: 32px;" />
+                    <b>Gold:</b> @playerData.Gold
+                </div>
             </div>
-            <div class="item schematics">
-                <img src="./images/icon/schematic.png" style="height: 32px;" />
-                <b>Schematics: </b> 12/40
-            </div>
-            <div class="item gold">
-                <img src="./images/icon/coins3.png" style="height: 32px;" />
-                <b>Gold:</b> 575
-            </div>
-            <div class="item other">
-                ...
-            </div>
-        </div>
-
+        }
     </Authorized>
     <NotAuthorized>
         <!-- Add content for not authorized users if needed -->
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    public bool displayData = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        playerData.Action += StateHasChanged;
+        await playerData.UpdatePlayerData();
+        displayData = true;
+        StateHasChanged();
+    }
+}
