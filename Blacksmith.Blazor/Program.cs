@@ -26,7 +26,8 @@ namespace Blacksmith.Blazor
                 builder.Configuration.Bind("Local", options.ProviderOptions);
             });
 
-            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+            builder.Services.AddScoped<CustomAuthStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<CustomAuthStateProvider>());
 
             builder.Services.AddAuthorizationCore();
 
