@@ -2,7 +2,7 @@
 
 <AuthorizeView>
     <Authorized>
-        @if (displayData == true)
+        @if (playerData.DisplayData == true)
         {
             <div class="container-fluid">
                 <div class="item level">
@@ -26,13 +26,8 @@
 </AuthorizeView>
 
 @code {
-    public bool displayData = false;
-
     protected override async Task OnInitializedAsync()
     {
         playerData.Action += StateHasChanged;
-        await playerData.UpdatePlayerData();
-        displayData = true;
-        StateHasChanged();
     }
 }

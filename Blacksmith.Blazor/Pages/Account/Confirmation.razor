@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
+@inject PlayerDataService playerData
 
 <AuthorizeView>
     <Authorized>
@@ -51,6 +52,7 @@
             await LocalStorage.SetItemAsync("refreshtoken", tokens.RefreshToken);
             await LocalStorage.SetItemAsync("token", tokens.Jwt);
             await AuthStateProvider.GetAuthenticationStateAsync();
+            await playerData.UpdatePlayerData();
             NavigationManager.NavigateTo("/");
         }
         else
