@@ -17,7 +17,7 @@ namespace Blacksmith.WebApi.Services
             var mail = _config["EmailSettings:Email"];
             var pw = _config["EmailSettings:Password"];
 
-            var client = new SmtpClient("smtp-mail.outlook.com", 587)
+            var client = new SmtpClient("smtp.gmail.com", 587)
             {
                 EnableSsl = true,
                 Credentials = new NetworkCredential(mail, pw)
