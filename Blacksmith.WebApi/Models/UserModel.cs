@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Blacksmith.WebApi.Models
 {
@@ -18,29 +19,21 @@ namespace Blacksmith.WebApi.Models
     public class UserModel
     {
         [Key]
-        [Required]
         public int Id { get; set; }
-        [Required]
         [StringLength(32)]
         public string Username { get; set; }
-        [Required]
         [EmailAddress]
         public string Email { get; set; }
-        [Required]
         public string Role { get; set; }
-        [Required]
         public AccountStatus AccountStatus { get; set; }
-        [Required]
         public LoginStatus LoginStatus { get; set; }
-        [Required]
         public string LoginCode { get; set; }
-        [Required]
         public DateTime LoginCodeExp { get; set; }
-        [Required]
         public DateTime CreatedAt { get; set; }
-        [Required]
         public DateTime UpdatedAt { get; set; }
-        public GameData Data { get; set; }
+        public int GameDataId { get; set; }
+        [ForeignKey("GameDataId")]
+        public GameData GameData { get; set; }
 
         public UserModel()
         {
@@ -51,7 +44,7 @@ namespace Blacksmith.WebApi.Models
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            Data = new GameData();
+            GameData = new GameData();
         }
 
         // Update the user after fetching it from the database
