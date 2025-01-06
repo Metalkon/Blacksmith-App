@@ -17,10 +17,20 @@ namespace Blacksmith.WebApi.Controllers
             _db = context;
         }
 
-        [HttpGet("ItemCheck")]
-        public async Task<ActionResult<TestPotato>> ItemCheck(string input)
+        [HttpGet("TestItem")]
+        public async Task<ActionResult<TestPotato>> TestItem(string name)
         {
             if (!ModelState.IsValid) return BadRequest();
+
+            Item testItem = new Item()
+            {
+                Name = name,
+                Tier = 1,
+                Weight = 5.0,
+                Description = "Test item description"
+            };
+            _db.Items.Add(testItem);
+            _db.SaveChanges();
 
             return Ok();
         }

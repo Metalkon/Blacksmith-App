@@ -10,5 +10,15 @@ namespace Blacksmith.WebApi.Models.Items
         public int Score { get; set; }
         public int Durability { get; set; }
         public int Price { get; set; }
+
+        public ItemCrafted()
+        {
+            ItemId = 1;
+            PrefixId = 2;
+            SuffixId = 2;
+            Score = 580;
+            Durability = 65;
+            Price = 150;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Blacksmith.WebApi.Models.Items
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Blacksmith.WebApi.Models.Items
 {
     public class Item
     {
