@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Blacksmith.WebApi.Data;
-using Blacksmith.WebApi.Models;
-using Blacksmith.WebApi.Services;
 using Shared_Classes.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
-using static System.Net.Mime.MediaTypeNames;
-using System.Security.Claims;
+using Blacksmith.WebApi.Models.Items;
 
 // --------------------------
 // This is an outdated Item Controller from the old prototype project, it's been modified slightly but it will need to be overhauled.
@@ -26,12 +23,12 @@ namespace Blacksmith.WebApi.Controllers
         {
             _db = context;
         }
-
+        /*
         // Retrieves a paginated list of "items" from the database as a JSON response.
         [HttpGet]
-        public async Task<ActionResult<ItemManagerResponseDTO>> GetItems(int pageNumber, int pageSize, string? searchQuery, int lastItemId)
+        public async Task<ActionResult<ItemManagerResponseDTO>> GetItems(int pageNumber, int pageSize, string? searchQuery, int lastId)
         {
-            if (!ModelState.IsValid || pageSize == null || pageNumber == null || lastItemId == null)
+            if (!ModelState.IsValid || pageSize == null || pageNumber == null || lastId == null)
             {
                 return BadRequest("Invalid Request");
             }
@@ -47,7 +44,7 @@ namespace Blacksmith.WebApi.Controllers
             pageSize = pageSize <= 0 ? 5 : pageSize;
             pageSize = pageSize > 100 ? 100 : pageSize;
 
-            List<Item> itemList = await _db.Items
+            List<Recipe>itemList = await _db.Recipes
                 .Where(x => x.Name.Contains(searchQuery))
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -60,7 +57,7 @@ namespace Blacksmith.WebApi.Controllers
 
             var result = new ItemManagerResponseDTO()
             {
-                LastItemId = itemList.Max(item => item.Id),
+                LastId = itemList.Max(item => item.Id),
                 Data = new List<ItemDTO>()
             };
 
@@ -72,6 +69,7 @@ namespace Blacksmith.WebApi.Controllers
             return Ok(result);
         }
 
+        
         // Retrieves a single item by id as a JSON response.
         [HttpGet]
         [Route("{id}")]
@@ -82,7 +80,7 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest("Invalid Request");
             }
 
-            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
+            Item item = await _db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null)
             {
@@ -104,7 +102,7 @@ namespace Blacksmith.WebApi.Controllers
             }
 
             // Check Values, Set Defaults
-            itemDto.ItemId = itemDto.ItemId == null ? 0 : itemDto.ItemId;
+            itemDto.Id = itemDto.Id == null ? 0 : itemDto.Id;
             itemDto.Name = string.IsNullOrEmpty(itemDto.Name) ? "Untitled" : itemDto.Name;
             itemDto.Type = string.IsNullOrEmpty(itemDto.Type) ? "None" : itemDto.Type;
             itemDto.Quantity = (itemDto.Quantity == null || itemDto.Quantity == 0) ? 1 : itemDto.Quantity;
@@ -114,7 +112,7 @@ namespace Blacksmith.WebApi.Controllers
 
             Item newItem = await MapDTOToItem(itemDto);
 
-            _db.Items.Add(newItem);
+            _db.Recipes.Add(newItem);
             await _db.SaveChangesAsync();
 
             return Ok(MapItemToDTO(newItem));
@@ -130,13 +128,13 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest();
             }
 
-            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
+            Item item = await _db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null)
             {
                 return NotFound();
             }
-            _db.Items.Remove(item);
+            _db.Recipes.Remove(item);
             await _db.SaveChangesAsync();
             return NoContent();
         }
@@ -150,7 +148,7 @@ namespace Blacksmith.WebApi.Controllers
                 return BadRequest();
             }
 
-            Item existingItem = await _db.Items.FindAsync(itemDto.Id);
+            Item existingItem = await _db.Recipes.FindAsync(itemDto.Id);
             if (existingItem == null)
             {
                 return NotFound();
@@ -160,7 +158,7 @@ namespace Blacksmith.WebApi.Controllers
                 existingItem = await MapDTOToItem(itemDto, existingItem);
 
                 // Check Values, Set Defaults
-                existingItem.ItemId = existingItem.ItemId == null ? 0 : existingItem.ItemId;
+                existingItem.Id = existingItem.Id == null ? 0 : existingItem.Id;
                 existingItem.Name = string.IsNullOrEmpty(existingItem.Name) ? "Untitled" : existingItem.Name;
                 existingItem.Type = string.IsNullOrEmpty(existingItem.Type) ? "None" : existingItem.Type;
                 existingItem.Quantity = (existingItem.Quantity == null || existingItem.Quantity == 0) ? 1 : existingItem.Quantity;
@@ -173,76 +171,66 @@ namespace Blacksmith.WebApi.Controllers
             }
             return BadRequest();
         }
-        
+        */
+
         private async Task<ItemDTO> MapItemToDTO(Item input)
         {
-            ItemDTO item = new ItemDTO()
+            ItemDTO itemDTO = new ItemDTO();
+
+            var inputProperties = typeof(Item).GetProperties();
+            var itemDTOProperties = typeof(ItemDTO).GetProperties();
+
+            foreach (var inputProp in inputProperties)
             {
-                Id = input.Id,
-                ItemId = input.ItemId,
-                Type = input.Type,
-                Name = input.Name,
-                Price = input.Price,
-                Tradable = input.Tradable,
-                Image = input.Image,
-                Description = input.Description,
-                Quality = input.Quality,
-                Rarity = input.Rarity,
-                Weight = input.Weight,
-                Durability = input.Durability,
-                AttackPower = input.AttackPower,
-                AttackSpeed = input.AttackSpeed,
-                MagicPower = input.MagicPower,
-                ProtectionPhysical = input.ProtectionPhysical,
-                ProtectionMagical = input.ProtectionMagical
-            };
-            return item;
+                var itemDTOProp = itemDTOProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
+
+                if (itemDTOProp != null && itemDTOProp.CanWrite)
+                {
+                    var value = inputProp.GetValue(input);
+                    itemDTOProp.SetValue(itemDTO, value);
+                }
+            }
+
+            return itemDTO;
         }
 
         private async Task<Item> MapDTOToItem(ItemDTO input)
         {
-            Item item = new Item()
+            Item item = new Item();
+
+            var inputProperties = typeof(ItemDTO).GetProperties();
+            var itemProperties = typeof(Item).GetProperties();
+
+            foreach (var inputProp in inputProperties)
             {
-                Id = input.Id,
-                ItemId = input.ItemId,
-                Type = input.Type,
-                Name = input.Name,
-                Price = input.Price,
-                Tradable = input.Tradable,
-                Image = input.Image,
-                Description = input.Description,
-                Quality = input.Quality,
-                Rarity = input.Rarity,
-                Weight = input.Weight,
-                Durability = input.Durability,
-                AttackPower = input.AttackPower,
-                AttackSpeed = input.AttackSpeed,
-                MagicPower = input.MagicPower,
-                ProtectionPhysical = input.ProtectionPhysical,
-                ProtectionMagical = input.ProtectionMagical
-            };
+                var itemProp = itemProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
+
+                if (itemProp != null && itemProp.CanWrite)
+                {
+                    var value = inputProp.GetValue(input);
+                    itemProp.SetValue(item, value);
+                }
+            }
+
             return item;
         }
 
         private async Task<Item> MapDTOToItem(ItemDTO input, Item itemDb)
         {
-            itemDb.Id = input.Id;
-            itemDb.ItemId = input.ItemId;
-            itemDb.Type = input.Type;
-            itemDb.Name = input.Name;
-            itemDb.Price = input.Price;
-            itemDb.Tradable = input.Tradable;
-            itemDb.Image = input.Image;
-            itemDb.Description = input.Description;
-            itemDb.Quality = input.Quality;
-            itemDb.Rarity = input.Rarity;
-            itemDb.Weight = input.Weight;
-            itemDb.Durability = input.Durability;
-            itemDb.AttackPower = input.AttackPower;
-            itemDb.AttackSpeed = input.AttackSpeed;
-            itemDb.MagicPower = input.MagicPower;
-            itemDb.ProtectionPhysical = input.ProtectionPhysical;
-            itemDb.ProtectionMagical = input.ProtectionMagical;
+            var inputProperties = typeof(ItemDTO).GetProperties();
+            var itemProperties = typeof(Item).GetProperties();
+
+            foreach (var inputProp in inputProperties)
+            {
+                var itemProp = itemProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
+
+                if (itemProp != null && itemProp.CanWrite)
+                {
+                    var value = inputProp.GetValue(input);
+                    itemProp.SetValue(itemDb, value);
+                }
+            }
+
             return itemDb;
         }
     }

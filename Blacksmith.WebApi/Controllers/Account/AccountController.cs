@@ -91,17 +91,17 @@ namespace Blacksmith.WebApi.Controllers.Account
         public async Task<ActionResult<string>> PlayerDisplayData()
         {
             string userEmail = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            UserModel user = await _db.Users.Include(u => u.Data).SingleOrDefaultAsync(x => x.Email == userEmail);
+            UserModel user = await _db.Users.Include(u => u.GameData).SingleOrDefaultAsync(x => x.Email == userEmail);
 
             if (user != null)
             {
                 PlayerDataDTO playerData = new PlayerDataDTO()
                 {
                     Username = user.Username ?? "N/A",
-                    Level = user.Data.Level,
-                    Experience = user.Data.Experience,
+                    Level = user.GameData.Level,
+                    Experience = user.GameData.Experience,
                     Schematics = 1, //Schematics = user.Data.Inventory.Count(x => x.Type == "Schematic"),
-                    Gold = user.Data.Gold
+                    Gold = user.GameData.Gold
                 };
 
                 return Ok(playerData);
