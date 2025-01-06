@@ -1,0 +1,88 @@
+﻿@page "/testpage2"
+@inherits BaseComponent
+
+<PageTitle>Test Page2</PageTitle>
+
+<div>
+    <input style="width: 25%;" type="text" placeholder="Enter a potato name" @bind-value="input" />
+</div>
+<div>
+    <button type="button" class="btn btn-primary" @onclick="@(() => GetPotato())">GetPotato</button>
+</div>
+<div>
+    <b>Object Contents:</b>
+</div>
+<div>
+    @testPotato.Id / @testPotato.Name
+</div>
+<div>
+    <b>Object Json:</b>
+</div>
+<div>
+    @testPotatoJson
+</div>
+<br />
+<div>
+    <b>Updated Object Contents:</b>
+</div>
+<div>
+    @testPotato2.Id / @testPotato2.Name
+</div>
+<div>
+    <b>Object Updated Json:</b>
+</div>
+<div>
+    @testPotatoJson2
+</div>
+<br />
+
+<div>
+    <b>ERRORS:</b> @message
+</div>
+
+
+
+
+@code {
+    private TestPotato testPotato = new TestPotato();
+    private string testPotatoJson;
+    private TestPotato testPotato2 = new TestPotato();
+    private string testPotatoJson2;
+    private HttpClient _client = new HttpClient();
+
+    private string input;
+    private string message = string.Empty;
+
+    private async Task GetPotato()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
+        if (response.IsSuccessStatusCode)
+        {
+            testPotato = await response.Content.ReadFromJsonAsync<TestPotato>();
+            testPotatoJson = await response.Content.ReadAsStringAsync();
+
+
+        }
+        else
+        {
+            string error = await response.Content.ReadAsStringAsync();
+            //object errorObj = response.Content.ReadFromJsonAsync<T>();
+
+            message = await response.Content.ReadAsStringAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task<string> HttpClientString()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    private async Task<TestPotato> HttpClientObject()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
+        return await response.Content.ReadFromJsonAsync<TestPotato>();
+    }
+}
