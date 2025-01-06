@@ -1,5 +1,6 @@
 ﻿using Blacksmith.WebApi.Models.Items;
 using System.ComponentModel.DataAnnotations;
+using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Models
 {
@@ -21,7 +22,10 @@ namespace Blacksmith.WebApi.Models
             UserItems = new List<ItemCrafted>();
             UserMaterials = new List<MaterialQuantity>();
 
-            UserItems.Add(new ItemCrafted());
+            UserItems.Add(new ItemCrafted() { Score = 444 });
+            UserItems.Add(new ItemCrafted() { Score = 575 });
+            UserItems.Add(new ItemCrafted() { Score = 310 });
+
         }
     }
 }

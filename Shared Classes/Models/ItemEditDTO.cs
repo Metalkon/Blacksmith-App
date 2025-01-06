@@ -1,7 +1,7 @@
 ﻿
 namespace Shared_Classes.Models
 {
-    public class ItemDTO
+    public class ItemEditDTO
     {
         // Display Properties
         public int Id { get; set; }
@@ -23,13 +23,6 @@ namespace Shared_Classes.Models
         public int BaseMagicPower { get; set; }
         public int BaseProtectionPhysical { get; set; }
         public int BaseProtectionMagic { get; set; }
-
-        // Crafted Properties
-        public string Prefix { get; set; }
-        public string Suffix { get; set; }
-        public int Score { get; set; }
-        public int Durability { get; set; }
-        public int Price { get; set; }
 
         public enum ItemRarity
         {

@@ -14,7 +14,7 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AdminItemController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -23,7 +23,7 @@ namespace Blacksmith.WebApi.Controllers
         {
             _db = context;
         }
-        /*
+        
         // Retrieves a paginated list of "items" from the database as a JSON response.
         [HttpGet]
         public async Task<ActionResult<ItemManagerResponseDTO>> GetItems(int pageNumber, int pageSize, string? searchQuery, int lastId)
@@ -44,7 +44,7 @@ namespace Blacksmith.WebApi.Controllers
             pageSize = pageSize <= 0 ? 5 : pageSize;
             pageSize = pageSize > 100 ? 100 : pageSize;
 
-            List<Recipe>itemList = await _db.Recipes
+            List<Item>itemList = await _db.Items
                 .Where(x => x.Name.Contains(searchQuery))
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -57,13 +57,13 @@ namespace Blacksmith.WebApi.Controllers
 
             var result = new ItemManagerResponseDTO()
             {
-                LastId = itemList.Max(item => item.Id),
-                Data = new List<ItemDTO>()
+                LastItemId = itemList.Max(item => item.Id),
+                Data = new List<ItemEditDTO>()
             };
 
             foreach (Item item in itemList)
             {
-                ItemDTO itemDto = await MapItemToDTO(item);
+                ItemEditDTO itemDto = await MapItemToDTO(item);
                 result.Data.Add(itemDto);
             }
             return Ok(result);
@@ -73,28 +73,29 @@ namespace Blacksmith.WebApi.Controllers
         // Retrieves a single item by id as a JSON response.
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<ItemDTO>> GetItemById(int id)
+        public async Task<ActionResult<ItemEditDTO>> GetItemById(int id)
         {
             if (!ModelState.IsValid || id == null)
             {
                 return BadRequest("Invalid Request");
             }
 
-            Item item = await _db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null)
             {
                 return NotFound();
             }
 
-            ItemDTO itemDto = await MapItemToDTO(item);
+            ItemEditDTO itemDto = await MapItemToDTO(item);
 
             return Ok(itemDto);
         }
 
+        
         // Creates a new database entry
         [HttpPost]
-        public async Task<ActionResult<ItemDTO>> CreateItem(ItemDTO itemDto)
+        public async Task<ActionResult<ItemEditDTO>> CreateItem(ItemEditDTO itemDto)
         {
             if (!ModelState.IsValid || itemDto == null)
             {
@@ -102,6 +103,7 @@ namespace Blacksmith.WebApi.Controllers
             }
 
             // Check Values, Set Defaults
+            /*
             itemDto.Id = itemDto.Id == null ? 0 : itemDto.Id;
             itemDto.Name = string.IsNullOrEmpty(itemDto.Name) ? "Untitled" : itemDto.Name;
             itemDto.Type = string.IsNullOrEmpty(itemDto.Type) ? "None" : itemDto.Type;
@@ -109,10 +111,10 @@ namespace Blacksmith.WebApi.Controllers
             itemDto.Price = itemDto.Price == null ? 0 : itemDto.Price;
             itemDto.Tradable = itemDto.Tradable == null ? false : itemDto.Tradable;
             itemDto.Image = itemDto.Image == null ? "./images/Icon/Question_Mark.jpg" : itemDto.Image;
-
+            */
             Item newItem = await MapDTOToItem(itemDto);
 
-            _db.Recipes.Add(newItem);
+            _db.Items.Add(newItem);
             await _db.SaveChangesAsync();
 
             return Ok(MapItemToDTO(newItem));
@@ -121,34 +123,34 @@ namespace Blacksmith.WebApi.Controllers
         // Deletes a single item entry by id.
         [HttpDelete]
         [Route("{id}")]
-        public async Task<ActionResult<ItemDTO>> DeleteItemById(int id)
+        public async Task<ActionResult<ItemEditDTO>> DeleteItemById(int id)
         {
             if (!ModelState.IsValid || id == null)
             {
                 return BadRequest();
             }
 
-            Item item = await _db.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+            Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null)
             {
                 return NotFound();
             }
-            _db.Recipes.Remove(item);
+            _db.Items.Remove(item);
             await _db.SaveChangesAsync();
             return NoContent();
         }
-
+                
         // Updates a single item entry by id.
         [HttpPut]
-        public async Task<ActionResult<ItemDTO>> UpdateItemById(ItemDTO itemDto)
+        public async Task<ActionResult<ItemEditDTO>> UpdateItemById(ItemEditDTO itemDto)
         {
             if (!ModelState.IsValid || itemDto == null)
             {
                 return BadRequest();
             }
 
-            Item existingItem = await _db.Recipes.FindAsync(itemDto.Id);
+            Item existingItem = await _db.Items.FindAsync(itemDto.Id);
             if (existingItem == null)
             {
                 return NotFound();
@@ -158,6 +160,7 @@ namespace Blacksmith.WebApi.Controllers
                 existingItem = await MapDTOToItem(itemDto, existingItem);
 
                 // Check Values, Set Defaults
+                /*
                 existingItem.Id = existingItem.Id == null ? 0 : existingItem.Id;
                 existingItem.Name = string.IsNullOrEmpty(existingItem.Name) ? "Untitled" : existingItem.Name;
                 existingItem.Type = string.IsNullOrEmpty(existingItem.Type) ? "None" : existingItem.Type;
@@ -165,20 +168,21 @@ namespace Blacksmith.WebApi.Controllers
                 existingItem.Price = existingItem.Price == null ? 0 : existingItem.Price;
                 existingItem.Tradable = existingItem.Tradable == null ? false : existingItem.Tradable;
                 existingItem.Image = existingItem.Image == null ? "./images/Icon/Question_Mark.jpg" : existingItem.Image;
+                */
 
                 await _db.SaveChangesAsync();
                 return Ok(itemDto);
             }
             return BadRequest();
         }
-        */
+        
 
-        private async Task<ItemDTO> MapItemToDTO(Item input)
+        private async Task<ItemEditDTO> MapItemToDTO(Item input)
         {
-            ItemDTO itemDTO = new ItemDTO();
+            ItemEditDTO itemDTO = new ItemEditDTO();
 
             var inputProperties = typeof(Item).GetProperties();
-            var itemDTOProperties = typeof(ItemDTO).GetProperties();
+            var itemDTOProperties = typeof(ItemEditDTO).GetProperties();
 
             foreach (var inputProp in inputProperties)
             {
@@ -194,11 +198,11 @@ namespace Blacksmith.WebApi.Controllers
             return itemDTO;
         }
 
-        private async Task<Item> MapDTOToItem(ItemDTO input)
+        private async Task<Item> MapDTOToItem(ItemEditDTO input)
         {
             Item item = new Item();
 
-            var inputProperties = typeof(ItemDTO).GetProperties();
+            var inputProperties = typeof(ItemEditDTO).GetProperties();
             var itemProperties = typeof(Item).GetProperties();
 
             foreach (var inputProp in inputProperties)
@@ -215,9 +219,9 @@ namespace Blacksmith.WebApi.Controllers
             return item;
         }
 
-        private async Task<Item> MapDTOToItem(ItemDTO input, Item itemDb)
+        private async Task<Item> MapDTOToItem(ItemEditDTO input, Item itemDb)
         {
-            var inputProperties = typeof(ItemDTO).GetProperties();
+            var inputProperties = typeof(ItemEditDTO).GetProperties();
             var itemProperties = typeof(Item).GetProperties();
 
             foreach (var inputProp in inputProperties)

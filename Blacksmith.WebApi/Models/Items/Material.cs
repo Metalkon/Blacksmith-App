@@ -1,6 +1,6 @@
 ﻿namespace Blacksmith.WebApi.Models.Items
 {
-    public class Material : Item
+    public class Material
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -14,9 +14,17 @@
             Name = $"N/A";
             Rarity = ItemRarity.Common;
             Tier = 0;
-            Weight = 0;
             Description = "N/A";
             Image = $"./images/Icon/question_mark.jpg";
+        }
+
+        public enum ItemRarity
+        {
+            Common,
+            Uncommon,
+            Rare,
+            Epic,
+            Legendary
         }
     }
 }

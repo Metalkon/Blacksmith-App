@@ -23,14 +23,9 @@ namespace Blacksmith.WebApi.Data
         {
             modelBuilder.Entity<UserModel>().OwnsOne(x => x.AccountStatus, owned => owned.ToJson());
             modelBuilder.Entity<UserModel>().OwnsOne(x => x.LoginStatus, owned => owned.ToJson());
-            modelBuilder.Entity<GameData>().OwnsOne(x => x.UserMaterials, owned => owned.ToJson());
-            modelBuilder.Entity<GameData>().OwnsOne(x => x.UserItems, owned => owned.ToJson());
-            modelBuilder.Entity<Item>().OwnsOne(x => x.Recipe, owned => owned.ToJson());
-
-
-
-            //modelBuilder.Entity<MaterialQuantity>().HasNoKey();
-            //modelBuilder.Entity<ItemCrafted>().HasNoKey();
+            modelBuilder.Entity<GameData>().OwnsMany(x => x.UserMaterials, owned => owned.ToJson());
+            modelBuilder.Entity<GameData>().OwnsMany(x => x.UserItems, owned => owned.ToJson());
+            modelBuilder.Entity<Item>().OwnsMany(x => x.Recipe, owned => owned.ToJson());
         }
     }
 }

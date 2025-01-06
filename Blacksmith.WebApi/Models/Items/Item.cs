@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Models.Items
 {

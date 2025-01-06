@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Blacksmith.WebApi.Models.Items
+﻿namespace Shared_Classes.Models
 {
     public class MaterialQuantity
     {
