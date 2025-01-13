@@ -12,10 +12,12 @@ namespace Blacksmith.WebApi.Controllers
     public class TestController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
+        private readonly ItemManager _itemManager;
 
-        public TestController(ApplicationDbContext context)
+        public TestController(ApplicationDbContext context, ItemManager itemManager)
         {
             _db = context;
+            _itemManager = itemManager;
         }
 
         [HttpGet("TestItem")]
@@ -42,7 +44,7 @@ namespace Blacksmith.WebApi.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             GameData userData = await _db.GameData.FirstOrDefaultAsync(x => x.Id == 1);
-            Item baseItem = await _db.Items.FirstOrDefaultAsync(x => x.Id == 1);
+            Item baseItem = _itemManager.Items.FirstOrDefault(x => x.Id == id);
             List<ItemCrafted> userItems = userData.UserItems;
             ItemCrafted item = userItems[0];
 
@@ -61,14 +63,15 @@ namespace Blacksmith.WebApi.Controllers
                 Durability = baseItem.BaseDurability + (int)(baseItem.BaseDurability * ((double)item.Score / 1000)),
                 Price = item.Price,
                 Score = item.Score,
-                AttackPower = baseItem.BaseAttackPower + (int)(baseItem.BaseAttackPower * ((double)item.Score / 1000)),
-                AttackSpeed = baseItem.BaseAttackSpeed + (int)(baseItem.BaseAttackSpeed * ((double)item.Score / 1000)),
-                MagicPower = baseItem.BaseMagicPower + (int)(baseItem.BaseMagicPower  * ((double)item.Score / 1000)),
-                ProtectionPhysical = baseItem.BaseProtectionPhysical + (int)(baseItem.BaseProtectionPhysical * ((double)item.Score / 1000)),
-                ProtectionMagic = baseItem.BaseProtectionMagic + (int)(baseItem.BaseProtectionMagic * ((double)item.Score / 1000)),
+                AttackPower = baseItem.BaseAttackPower + (baseItem.BaseAttackPower * ((double)item.Score / 1000)),
+                AttackSpeed = baseItem.BaseAttackSpeed + (baseItem.BaseAttackSpeed * ((double)item.Score / 1000)),
+                MagicPower = baseItem.BaseMagicPower + (baseItem.BaseMagicPower * ((double)item.Score / 1000)),
+                ProtectionPhysical = baseItem.BaseProtectionPhysical + (baseItem.BaseProtectionPhysical * ((double)item.Score / 1000)),
+                ProtectionMagic = baseItem.BaseProtectionMagic + (baseItem.BaseProtectionMagic * ((double)item.Score / 1000)),
                 Prefix = item.PrefixId.ToString(),
                 Suffix = item.SuffixId.ToString()
             };
+
 
             //_db.Items.Add(testItem);
             //_db.SaveChanges();
