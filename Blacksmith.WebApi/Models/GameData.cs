@@ -21,11 +21,6 @@ namespace Blacksmith.WebApi.Models
             Gold = 500;
             UserItems = new List<ItemCrafted>();
             UserMaterials = new List<MaterialQuantity>();
-
-            UserItems.Add(new ItemCrafted() { Score = 444 });
-            UserItems.Add(new ItemCrafted() { Score = 575 });
-            UserItems.Add(new ItemCrafted() { Score = 310 });
-
         }
     }
 }

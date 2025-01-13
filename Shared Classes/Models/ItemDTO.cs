@@ -17,9 +17,6 @@ namespace Shared_Classes.Models
         // Crafting Properties
         public List<MaterialQuantity> Recipe { get; set; }
         public bool Tradable { get; set; }
-        public int BaseDurability { get; set; }
-        public int BasePrice { get; set; }
-        public int BaseScore { get; set; }
         public double AttackPower { get; set; }
         public double AttackSpeed { get; set; }
         public double MagicPower { get; set; }

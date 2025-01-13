@@ -12,6 +12,7 @@
 
         public ItemCrafted()
         {
+            ItemId = 1;
             CraftId = Guid.NewGuid().ToString("N").Substring(0, 8);
             PrefixId = 0;
             SuffixId = 0;
