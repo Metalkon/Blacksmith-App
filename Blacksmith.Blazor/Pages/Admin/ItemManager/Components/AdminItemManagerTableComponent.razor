@@ -1,4 +1,5 @@
 ﻿@inject HttpClientTokenService client
+@using Shared_Classes.Models
 
 @if (pageState == "Loading")
 {
@@ -150,7 +151,7 @@
         ItemEditDTO newItem = new ItemEditDTO()
         {
             Name = "",
-            Rarity = ItemEditDTO.ItemRarity.Common,
+            Rarity = ItemRarity.Common,
             Tier = 0,
             Weight = 0.0,
             Description = "",

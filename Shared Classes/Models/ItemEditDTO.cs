@@ -1,5 +1,4 @@
-﻿
-namespace Shared_Classes.Models
+﻿namespace Shared_Classes.Models
 {
     public class ItemEditDTO
     {
@@ -18,19 +17,10 @@ namespace Shared_Classes.Models
         public int BaseDurability { get; set; }
         public int BasePrice { get; set; }
         public int BaseScore { get; set; }
-        public int BaseAttackPower { get; set; }
-        public int BaseAttackSpeed { get; set; }
-        public int BaseMagicPower { get; set; }
-        public int BaseProtectionPhysical { get; set; }
-        public int BaseProtectionMagic { get; set; }
-
-        public enum ItemRarity
-        {
-            Common,
-            Uncommon,
-            Rare,
-            Epic,
-            Legendary
-        }
+        public double BaseAttackPower { get; set; }
+        public double BaseAttackSpeed { get; set; }
+        public double BaseMagicPower { get; set; }
+        public double BaseProtectionPhysical { get; set; }
+        public double BaseProtectionMagic { get; set; }
     }
 }

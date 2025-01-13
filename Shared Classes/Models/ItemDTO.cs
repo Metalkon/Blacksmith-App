@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Shared_Classes.Models
 {
     public class ItemDTO
@@ -18,26 +20,18 @@ namespace Shared_Classes.Models
         public int BaseDurability { get; set; }
         public int BasePrice { get; set; }
         public int BaseScore { get; set; }
-        public int BaseAttackPower { get; set; }
-        public int BaseAttackSpeed { get; set; }
-        public int BaseMagicPower { get; set; }
-        public int BaseProtectionPhysical { get; set; }
-        public int BaseProtectionMagic { get; set; }
+        public double AttackPower { get; set; }
+        public double AttackSpeed { get; set; }
+        public double MagicPower { get; set; }
+        public double ProtectionPhysical { get; set; }
+        public double ProtectionMagic { get; set; }
 
         // Crafted Properties
+        public string CraftId { get; set; }
         public string Prefix { get; set; }
         public string Suffix { get; set; }
         public int Score { get; set; }
         public int Durability { get; set; }
         public int Price { get; set; }
-
-        public enum ItemRarity
-        {
-            Common,
-            Uncommon,
-            Rare,
-            Epic,
-            Legendary
-        }
     }
 }

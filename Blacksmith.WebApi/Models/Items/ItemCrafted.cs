@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Blacksmith.WebApi.Models.Items
+﻿namespace Blacksmith.WebApi.Models.Items
 {
     public class ItemCrafted
     {
         public int ItemId { get; set; }
+        public string CraftId { get; set; }
         public int PrefixId { get; set; }
         public int SuffixId { get; set; }
         public int Score { get; set; }
@@ -13,12 +12,12 @@ namespace Blacksmith.WebApi.Models.Items
 
         public ItemCrafted()
         {
-            ItemId = 1;
-            PrefixId = 2;
-            SuffixId = 2;
-            Score = 580;
-            Durability = 65;
-            Price = 150;
+            CraftId = Guid.NewGuid().ToString("N").Substring(0, 8);
+            PrefixId = 0;
+            SuffixId = 0;
+            Score = 0;
+            Durability = 1;
+            Price = 1;
         }
     }
 }

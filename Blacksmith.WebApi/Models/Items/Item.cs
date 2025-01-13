@@ -19,11 +19,11 @@ namespace Blacksmith.WebApi.Models.Items
         public int BaseDurability { get; set; }
         public int BasePrice { get; set; }
         public int BaseScore { get; set; }
-        public int BaseAttackPower { get; set; }
-        public int BaseAttackSpeed { get; set; }
-        public int BaseMagicPower { get; set; }
-        public int BaseProtectionPhysical { get; set; }
-        public int BaseProtectionMagic { get; set; }
+        public double BaseAttackPower { get; set; }
+        public double BaseAttackSpeed { get; set; }
+        public double BaseMagicPower { get; set; }
+        public double BaseProtectionPhysical { get; set; }
+        public double BaseProtectionMagic { get; set; }
 
         public Item()
         {
@@ -45,15 +45,6 @@ namespace Blacksmith.WebApi.Models.Items
             BaseMagicPower = 0;
             BaseProtectionPhysical = 0;
             BaseProtectionMagic = 0;
-        }
-
-        public enum ItemRarity
-        {
-            Common,
-            Uncommon,
-            Rare,
-            Epic,
-            Legendary
-        }          
+        }        
     }
 }

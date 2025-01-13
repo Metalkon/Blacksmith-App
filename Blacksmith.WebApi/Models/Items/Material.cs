@@ -1,4 +1,6 @@
-﻿namespace Blacksmith.WebApi.Models.Items
+﻿using Shared_Classes.Models;
+
+namespace Blacksmith.WebApi.Models.Items
 {
     public class Material
     {
@@ -16,15 +18,6 @@
             Tier = 0;
             Description = "N/A";
             Image = $"./images/Icon/question_mark.jpg";
-        }
-
-        public enum ItemRarity
-        {
-            Common,
-            Uncommon,
-            Rare,
-            Epic,
-            Legendary
         }
     }
 }
