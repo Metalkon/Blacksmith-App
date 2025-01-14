@@ -42,6 +42,7 @@
     {
         var response = await client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
         testPotato = await response.Content.ReadFromJsonAsync<TestPotato>();
+        HttpResponseMessage test5 = new HttpResponseMessage();
 
         if (response != null)
         {

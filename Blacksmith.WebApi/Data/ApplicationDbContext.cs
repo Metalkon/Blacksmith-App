@@ -1,4 +1,5 @@
 ﻿using Blacksmith.WebApi.Models;
+using Blacksmith.WebApi.Models.Items;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
@@ -16,21 +17,15 @@ namespace Blacksmith.WebApi.Data
         public DbSet<TestPotato> TestPotatoes { get; set; }
         public DbSet<GameData> GameData { get; set; }
         public DbSet<Item> Items { get; set; }
+        public DbSet<Material> Materials { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserModel>().OwnsOne(x => x.AccountStatus, ownedNavigationBuilder =>
-            {
-                ownedNavigationBuilder.ToJson();
-            });
-            modelBuilder.Entity<UserModel>().OwnsOne(x => x.LoginStatus, ownedNavigationBuilder =>
-            {
-                ownedNavigationBuilder.ToJson();
-            });
-            modelBuilder.Entity<GameData>().OwnsOne(x => x.Inventory, ownedNavigationBuilder =>
-            {
-                ownedNavigationBuilder.ToJson();
-            });
+            modelBuilder.Entity<UserModel>().OwnsOne(x => x.AccountStatus, owned => owned.ToJson());
+            modelBuilder.Entity<UserModel>().OwnsOne(x => x.LoginStatus, owned => owned.ToJson());
+            modelBuilder.Entity<GameData>().OwnsMany(x => x.UserMaterials, owned => owned.ToJson());
+            modelBuilder.Entity<GameData>().OwnsMany(x => x.UserItems, owned => owned.ToJson());
+            modelBuilder.Entity<Item>().OwnsMany(x => x.Recipe, owned => owned.ToJson());
         }
     }
 }

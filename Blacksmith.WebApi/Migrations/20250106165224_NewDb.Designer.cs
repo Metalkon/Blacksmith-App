@@ -4,6 +4,7 @@ using Blacksmith.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blacksmith.WebApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250106165224_NewDb")]
+    partial class NewDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,26 +55,26 @@ namespace Blacksmith.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("BaseAttackPower")
-                        .HasColumnType("float");
+                    b.Property<int>("BaseAttackPower")
+                        .HasColumnType("int");
 
-                    b.Property<double>("BaseAttackSpeed")
-                        .HasColumnType("float");
+                    b.Property<int>("BaseAttackSpeed")
+                        .HasColumnType("int");
 
                     b.Property<int>("BaseDurability")
                         .HasColumnType("int");
 
-                    b.Property<double>("BaseMagicPower")
-                        .HasColumnType("float");
+                    b.Property<int>("BaseMagicPower")
+                        .HasColumnType("int");
 
                     b.Property<int>("BasePrice")
                         .HasColumnType("int");
 
-                    b.Property<double>("BaseProtectionMagic")
-                        .HasColumnType("float");
+                    b.Property<int>("BaseProtectionMagic")
+                        .HasColumnType("int");
 
-                    b.Property<double>("BaseProtectionPhysical")
-                        .HasColumnType("float");
+                    b.Property<int>("BaseProtectionPhysical")
+                        .HasColumnType("int");
 
                     b.Property<int>("BaseScore")
                         .HasColumnType("int");
@@ -224,7 +227,7 @@ namespace Blacksmith.WebApi.Migrations
 
             modelBuilder.Entity("Blacksmith.WebApi.Models.GameData", b =>
                 {
-                    b.OwnsMany("Shared_Classes.Models.MaterialQuantity", "UserMaterials", b1 =>
+                    b.OwnsMany("Blacksmith.WebApi.Models.Items.MaterialQuantity", "UserMaterials", b1 =>
                         {
                             b1.Property<int>("GameDataId")
                                 .HasColumnType("int");
@@ -257,10 +260,6 @@ namespace Blacksmith.WebApi.Migrations
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int");
-
-                            b1.Property<string>("CraftId")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<int>("Durability")
                                 .HasColumnType("int");
@@ -297,7 +296,7 @@ namespace Blacksmith.WebApi.Migrations
 
             modelBuilder.Entity("Blacksmith.WebApi.Models.Items.Item", b =>
                 {
-                    b.OwnsMany("Shared_Classes.Models.MaterialQuantity", "Recipe", b1 =>
+                    b.OwnsMany("Blacksmith.WebApi.Models.Items.MaterialQuantity", "Recipe", b1 =>
                         {
                             b1.Property<int>("ItemId")
                                 .HasColumnType("int");

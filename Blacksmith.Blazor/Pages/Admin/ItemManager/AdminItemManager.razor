@@ -21,7 +21,7 @@
 @code {
     public string message;
     public string pageState;
-    public ItemDTO item;
+    public ItemEditDTO item;
     private AdminItemManagerTableComponent ItemManager;
 
     protected override async Task OnInitializedAsync()
@@ -29,7 +29,7 @@
         pageState = "Table";
     }
 
-    public void TransferItem(ItemDTO value)
+    public void TransferItem(ItemEditDTO value)
     {
         item = value;
     }

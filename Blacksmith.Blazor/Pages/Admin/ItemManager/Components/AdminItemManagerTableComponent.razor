@@ -1,4 +1,5 @@
 ﻿@inject HttpClientTokenService client
+@using Shared_Classes.Models
 
 @if (pageState == "Loading")
 {
@@ -26,10 +27,10 @@
         <thead>
             <tr>
                 <th>Image</th>
-                <th>Id(ItemId)</th>
+                <th>Id</th>
                 <th>Name</th>
-                <th>Type</th>
-                <th>Price</th>
+                <th>Rarity</th>
+                <th>Tier</th>
                 <th>Tradable</th>
                 <th style="width: 1%">Actions</th>
             </tr>
@@ -48,10 +49,10 @@
                             <img src="~/image/icon/question_mark.jpg" alt="Question Mark" />
                         }
                     </td>
-                    <td style="width: 20%; vertical-align: middle;">@item.Id (#@item.ItemId)</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Id</td>
                     <td style="width: 20%; vertical-align: middle;">@item.Name</td>
-                    <td style="width: 20%; vertical-align: middle;">@item.Type</td>
-                    <td style="width: 20%; vertical-align: middle;">@item.Price</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Rarity</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Tier</td>
                     <td style="width: 20%; vertical-align: middle;">
                         @{ string tradableStatus = item.Tradable ? "Yes" : "No"; }
                         @tradableStatus
@@ -98,11 +99,11 @@
     public EventCallback<string> ChangeState { get; set; }
 
     [Parameter]
-    public EventCallback<ItemDTO> TransferItem { get; set; }
+    public EventCallback<ItemEditDTO> TransferItem { get; set; }
 
     public string message;
     public string pageState;
-    public List<ItemDTO> items = new List<ItemDTO>();
+    public List<ItemEditDTO> items = new List<ItemEditDTO>();
     public PaginationDTO pagination = new PaginationDTO() { PageNumber = 1, PageSize = 5, LastItemId = 0, SearchQuery = "" };
 
     protected override async Task OnInitializedAsync()
@@ -138,7 +139,7 @@
     }
 
     // Edit Item
-    private async Task EditItem(ItemDTO editItem)
+    private async Task EditItem(ItemEditDTO editItem)
     {
         await TransferItem.InvokeAsync(editItem);
         await ChangeState.InvokeAsync("Edit");
@@ -147,15 +148,24 @@
     // Create Item
     private async Task CreateItem()
     {
-        ItemDTO newItem = new ItemDTO()
+        ItemEditDTO newItem = new ItemEditDTO()
         {
-            Id = 0,
-            ItemId = 0,
             Name = "",
-            Type = "",
-            Price = 0,
-            Quantity = 1,
-            Image = "./images/Icon/question_mark.jpg"
+            Rarity = ItemRarity.Common,
+            Tier = 0,
+            Weight = 0.0,
+            Description = "",
+            Image = "./images/Icon/question_mark.jpg",
+            Recipe = new List<MaterialQuantity>(),
+            Tradable = false,
+            BaseDurability = 0,
+            BasePrice = 0,
+            BaseScore = 0,
+            BaseAttackPower = 0,
+            BaseAttackSpeed = 0,
+            BaseMagicPower = 0,
+            BaseProtectionPhysical = 0,
+            BaseProtectionMagic = 0
         };
         await TransferItem.InvokeAsync(newItem);
         await ChangeState.InvokeAsync("Create");

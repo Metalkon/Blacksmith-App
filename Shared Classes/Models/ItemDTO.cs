@@ -1,29 +1,34 @@
 ﻿
+using System;
+
 namespace Shared_Classes.Models
 {
     public class ItemDTO
     {
-        // Primary Properties
+        // Display Properties
         public int Id { get; set; }
-        public int ItemId { get; set; }
         public string Name { get; set; }
-        public string Type { get; set; }
-        public int Price { get; set; }
-        public int Quantity { get; set; }
-        public bool Tradable { get; set; }
+        public ItemRarity Rarity { get; set; }
+        public int Tier { get; set; }
+        public double Weight { get; set; }
+        public string Description { get; set; }
         public string Image { get; set; }
 
-        // Secondary Properties
+        // Crafting Properties
+        public List<MaterialQuantity> Recipe { get; set; }
+        public bool Tradable { get; set; }
+        public double AttackPower { get; set; }
+        public double AttackSpeed { get; set; }
+        public double MagicPower { get; set; }
+        public double ProtectionPhysical { get; set; }
+        public double ProtectionMagic { get; set; }
 
-        public string? Description { get; set; }
-        public string? Quality { get; set; }
-        public string? Rarity { get; set; }
-        public int? Weight { get; set; }
-        public int? Durability { get; set; }
-        public int? AttackPower { get; set; }
-        public int? AttackSpeed { get; set; }
-        public int? MagicPower { get; set; }
-        public int? ProtectionPhysical { get; set; }
-        public int? ProtectionMagical { get; set; }
+        // Crafted Properties
+        public string CraftId { get; set; }
+        public string Prefix { get; set; }
+        public string Suffix { get; set; }
+        public int Score { get; set; }
+        public int Durability { get; set; }
+        public int Price { get; set; }
     }
 }

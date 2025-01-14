@@ -30,6 +30,7 @@ namespace Blacksmith.WebApi
 
             builder.Services.AddTransient<EmailSender>();
             builder.Services.AddTransient<TokenService>();
+            builder.Services.AddSingleton<ItemManager>();
 
             // Jwt/Auth stuff 
             builder.Services.AddAuthentication(x =>
@@ -60,6 +61,12 @@ namespace Blacksmith.WebApi
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            // Prepare ItemManager List
+            using (var scope = app.Services.CreateScope())
+            {
+                var itemManager = scope.ServiceProvider.GetRequiredService<ItemManager>();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
