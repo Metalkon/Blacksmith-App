@@ -14,7 +14,7 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminItemController : ControllerBase
     {
         private readonly ApplicationDbContext _db;

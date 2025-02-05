@@ -41,13 +41,15 @@ namespace Blacksmith.WebApi.Services
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, "Admin") // Temporary For Testing
+                //new Claim(ClaimTypes.Role, user.Role)
             };
             var token = new JwtSecurityToken(
                 issuer: _config["JwtSettings:Issuer"],
                 audience: _config["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddDays(7), // Temporary For Testing
+                //expires: DateTime.UtcNow.AddMinutes(15),
                 signingCredentials: credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Shared_Classes.Models;
 using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -20,6 +21,12 @@ namespace Blacksmith.Blazor.Services
             _localStorage = localStorage;
             _authStateProvider = authStateProvider;
             _navigationManager = navigationManager; 
+        }
+
+        public async Task TestRequest()
+        {
+            var response = await _httpClient.GetAsync($"https://localhost:8000/api/Test/PotatoName?input=blue");
+            Console.WriteLine("Done");
         }
 
         public async Task<HttpResponseMessage> GetAsync(string url)

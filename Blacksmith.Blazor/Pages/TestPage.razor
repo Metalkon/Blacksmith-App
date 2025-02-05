@@ -40,8 +40,9 @@
 
     private async Task SendRequest()
     {
-        var response = await client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
-        testPotato = await response.Content.ReadFromJsonAsync<TestPotato>();
+        //var response = await client.GetAsync($"https://localhost:8000/api/Test/PotatoName?input={input}");
+        client.TestRequest();
+        /*testPotato = await response.Content.ReadFromJsonAsync<TestPotato>();
         HttpResponseMessage test5 = new HttpResponseMessage();
 
         if (response != null)
@@ -51,7 +52,7 @@
         else
         {
             message = $"Something went wrong";
-        }
+        }*/
 
         StateHasChanged();
     }

@@ -22,11 +22,12 @@ namespace Blacksmith.WebApi
 
             builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyHeader();
-                policy.AllowAnyMethod();
-                policy.AllowAnyOrigin();
-            })
-            );
+                policy.WithOrigins("https://localhost:8001")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            }));
+
 
             builder.Services.AddTransient<EmailSender>();
             builder.Services.AddTransient<TokenService>();
@@ -42,8 +43,8 @@ namespace Blacksmith.WebApi
             {
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"], // localhost 8000
+                    ValidAudience = builder.Configuration["JwtSettings:Audience"], // localhost 8000
                     IssuerSigningKey = new SymmetricSecurityKey
                     (Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
                     ValidateIssuer = true,
@@ -76,15 +77,10 @@ namespace Blacksmith.WebApi
             }
 
             app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-
-            app.UseAuthorization();
-
             app.UseCors();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
-
             app.Run();
         }
     }

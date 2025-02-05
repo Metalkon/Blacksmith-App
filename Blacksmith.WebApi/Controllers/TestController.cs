@@ -1,6 +1,7 @@
 ﻿using Blacksmith.WebApi.Data;
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Models.Items;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -9,6 +10,7 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/Test")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class TestController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -20,6 +22,26 @@ namespace Blacksmith.WebApi.Controllers
             _itemManager = itemManager;
         }
 
+        [HttpGet("PotatoName")]
+        public async Task<ActionResult<TestPotato>> PotatoName(string input)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+
+            TestPotato findPotato = await _db.TestPotatoes.FirstOrDefaultAsync(x => x.Name.Contains(input));
+            if (findPotato == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(findPotato);
+        }
+
+    }
+}
+
+
+/*
         [HttpGet("TestItem")]
         public async Task<ActionResult<TestPotato>> TestItem(string name)
         {
@@ -98,21 +120,4 @@ namespace Blacksmith.WebApi.Controllers
 
             return Ok();
         }
-
-        [HttpGet("PotatoName")]
-        public async Task<ActionResult<TestPotato>> PotatoName(string input)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-
-            TestPotato findPotato = await _db.TestPotatoes.FirstOrDefaultAsync(x => x.Name.Contains(input));
-            if (findPotato == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(findPotato);
-        }
-
-    }
-}
+ */ 
