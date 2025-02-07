@@ -38,7 +38,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                 UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == registerRequest.Email.ToLower() || x.Username.ToLower() == registerRequest.Username.ToLower());
                 if (user != null)
                 {
-                    if (user.AccountStatus.Validated == true 
+                    if (user.Validated == true 
                         || (registerRequest.Email.ToLower() == user.Email.ToLower() && registerRequest.Username.ToLower() != user.Username.ToLower())
                         || (registerRequest.Email.ToLower() != user.Email.ToLower() && registerRequest.Username.ToLower() == user.Username.ToLower()))
                     {
@@ -47,12 +47,13 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                     user = await user.UpdateUser(user);
 
-                    if (user.AccountStatus.Validated == false && user.LoginStatus.Status.Contains("Locked"))
-                    {
-                        if (user.LoginStatus.Status == "Locked/Awaiting")
+                    
+                    if (user.Validated == false && user.LoginStatus == LoginStatus.Locked)
+                    { 
+                        if (user.LoginStatus == LoginStatus.LockedAwaiting)
                         {
-                            user.LoginStatus.Status = "Locked";
-                            user.LoginStatus.StatusCode = Guid.NewGuid().ToString();
+                            user.LoginStatus = LoginStatus.Locked;
+                            user.LoginStatusCode = Guid.NewGuid().ToString();
                             bool sendLockedEmail = await SendEmailLocked(user);
                             if (sendLockedEmail == true)
                             {
@@ -64,18 +65,19 @@ namespace Blacksmith.WebApi.Controllers.Account
                                 return StatusCode(500, "Failed to send the email. Please try again later");
                             }
                         }
+                        
                         return StatusCode(403, "Access Denied: Registration with this email address has been locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the 'Unlock' URL sent in the most recently sent email.");
                     }
-                    if (user.AccountStatus.Validated == false && user.LoginCodeExp >= DateTime.UtcNow)
+                    if (user.Validated == false && user.LoginCodeExp >= DateTime.UtcNow)
                     {
                         return BadRequest($"You are unable to attempt to register again so soon again after your previous attempt");
                     }
-                    if (user.AccountStatus.Validated == false && registerRequest.Email.ToLower() == user.Email.ToLower() && registerRequest.Username.ToLower() == user.Username.ToLower())
+                    if (user.Validated == false && registerRequest.Email.ToLower() == user.Email.ToLower() && registerRequest.Username.ToLower() == user.Username.ToLower())
                     {
                         user.Email = registerRequest.Email;
                         user.Username = registerRequest.Username;
-                        user.LoginStatus.Status = "Awaiting";
-                        user.LoginStatus.LoginAttempts++;
+                        user.LoginStatus = LoginStatus.Awaiting;
+                        user.LoginAttempts++;
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
                         user.UpdatedAt = DateTime.UtcNow;
@@ -92,7 +94,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     };
                     _db.Users.Add(user);
                 }
-                user.LoginStatus.LoginAttempts++;
+                user.LoginAttempts++;
                 await _db.SaveChangesAsync();
                 bool sendEmail = await SendEmailRegister(user);
                 if (sendEmail == true)
@@ -127,11 +129,11 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                 if (user != null)
                 {
-                    if (user.AccountStatus.Validated == true)
+                    if (user.Validated == true)
                     {
                         return BadRequest("Your account has already been validated.");
                     }
-                    if (user.LoginStatus.Status != "Awaiting")
+                    if (user.LoginStatus != LoginStatus.Awaiting)
                     {
                         return BadRequest("Your account is not currently awaiting confirmation to register.");
                     }
@@ -143,13 +145,13 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("The time to confirm your email address has expired, please try registering again");
                     }
-                    if (user.AccountStatus.Validated == false)
+                    if (user.Validated == false)
                     {
-                        user.AccountStatus.Validated = true;
-                        user.AccountStatus.Status = "Active";
+                        user.Validated = true;
+                        user.AccountStatus = AccountStatus.Active;
                         user.LoginCodeExp = DateTime.UtcNow;
-                        user.LoginStatus.Status = "Active";
-                        user.LoginStatus.LoginAttempts = 0;
+                        user.LoginStatus = LoginStatus.Active;
+                        user.LoginAttempts = 0;
                         user.UpdatedAt = DateTime.UtcNow;
                         user.CreatedAt = DateTime.UtcNow;
 
@@ -190,7 +192,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith App - Registration Has Been Locked";
             var message = $"Registration with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatus.StatusCode}";
+                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatusCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

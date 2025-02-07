@@ -45,20 +45,20 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                     user = await user.UpdateUser(user);
 
-                    if (user.AccountStatus.Status == "Banned")
+                    if (user.AccountStatus == AccountStatus.Banned)
                     {
                         return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
                     }
-                    if (user.AccountStatus.Status == "Suspended")
+                    if (user.AccountStatus == AccountStatus.Suspended)
                     {
-                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
+                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
                     }
-                    if (user.AccountStatus.Validated && user.LoginStatus.Status.Contains("Locked"))
+                    if (user.Validated && user.LoginStatus == LoginStatus.Locked)
                     {
-                        if (user.LoginStatus.Status == "Locked/Awaiting")
+                        if (user.LoginStatus == LoginStatus.LockedAwaiting)
                         {
-                            user.LoginStatus.Status = "Locked";
-                            user.LoginStatus.StatusCode = Guid.NewGuid().ToString();
+                            user.LoginStatus = LoginStatus.Locked;
+                            user.LoginStatusCode = Guid.NewGuid().ToString();
                             bool sendLockedEmail = await SendEmailLocked(user);
                             if (sendLockedEmail == true)
                             {
@@ -72,20 +72,20 @@ namespace Blacksmith.WebApi.Controllers.Account
                         }
                         return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the 'Unlock' URL sent in the most recently sent email.");
                     }
-                    if (user.AccountStatus.Validated && user.LoginCodeExp >= DateTime.UtcNow)
+                    if (user.Validated && user.LoginCodeExp >= DateTime.UtcNow)
                     {
                         return BadRequest($"Access Denied: Please wait before attempting to log in again.");
                     }
-                    if (user.AccountStatus.Validated == false)
+                    if (user.Validated == false)
                     {
                         return BadRequest("Access Denied: Your account has not been validated. Please check your email for verification instructions.");
                     }
-                    if (user.AccountStatus.Validated == true && user.Email.ToLower() == loginRequest.Email.ToLower() && user.Username.ToLower() == loginRequest.Username.ToLower())
+                    if (user.Validated == true && user.Email.ToLower() == loginRequest.Email.ToLower() && user.Username.ToLower() == loginRequest.Username.ToLower())
                     {
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
-                        user.LoginStatus.Status = "Awaiting";
-                        user.LoginStatus.LoginAttempts++;
+                        user.LoginStatus = LoginStatus.Awaiting;
+                        user.LoginAttempts++;
                         await _db.SaveChangesAsync();
                         bool sendEmail = await SendEmailLogin(user);
 
@@ -126,15 +126,15 @@ namespace Blacksmith.WebApi.Controllers.Account
 
                 if (user != null)
                 {
-                    if (user.AccountStatus.Status == "Banned")
+                    if (user.AccountStatus == AccountStatus.Banned)
                     {
                         return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
                     }
-                    if (user.AccountStatus.Status == "Suspended")
+                    if (user.AccountStatus == AccountStatus.Suspended)
                     {
-                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
+                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
                     }
-                    if (user.LoginStatus.Status != "Awaiting")
+                    if (user.LoginStatus != LoginStatus.Awaiting)
                     {
                         return BadRequest("Your account is not currently awaiting confirmation to login");
                     }
@@ -146,12 +146,12 @@ namespace Blacksmith.WebApi.Controllers.Account
                     {
                         return BadRequest("Incorrect Code");
                     }
-                    if (user.AccountStatus.Validated == true)
+                    if (user.Validated == true)
                     {
                         user.LoginCode = Guid.NewGuid().ToString();
                         user.LoginCodeExp = DateTime.UtcNow;
-                        user.LoginStatus.LoginAttempts = 0;
-                        user.LoginStatus.Status = "Active";
+                        user.LoginAttempts = 0;
+                        user.LoginStatus = LoginStatus.Active;
 
                         await _db.SaveChangesAsync();
 
@@ -186,7 +186,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith App - Account Has Been Locked";
             var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatus.StatusCode}";
+                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatusCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

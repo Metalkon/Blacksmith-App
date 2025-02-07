@@ -79,7 +79,7 @@ public class ItemManager
                 }
             }
             Console.WriteLine("Critical error: Failed to load items from the database after 3 attempts. Shutting down...");
-            Environment.Exit(1);
+            //Environment.Exit(1);
         }
     }
 

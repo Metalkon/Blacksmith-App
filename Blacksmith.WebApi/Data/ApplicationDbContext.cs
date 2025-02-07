@@ -21,8 +21,6 @@ namespace Blacksmith.WebApi.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserModel>().OwnsOne(x => x.AccountStatus, owned => owned.ToJson());
-            modelBuilder.Entity<UserModel>().OwnsOne(x => x.LoginStatus, owned => owned.ToJson());
             modelBuilder.Entity<GameData>().OwnsMany(x => x.UserMaterials, owned => owned.ToJson());
             modelBuilder.Entity<GameData>().OwnsMany(x => x.UserItems, owned => owned.ToJson());
             modelBuilder.Entity<Item>().OwnsMany(x => x.Recipe, owned => owned.ToJson());
