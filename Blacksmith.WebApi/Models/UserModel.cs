@@ -26,9 +26,8 @@ namespace Blacksmith.WebApi.Models
         public string LoginCode { get; set; }
         public DateTime LoginCodeExp { get; set; }
         public LoginStatus LoginStatus { get; set; }
-        public string LoginStatusCode { get; set; }
-        public DateTime LoginStatusCodeExp { get; set; }
         public int LoginAttempts { get; set; }
+        public string LockedCode { get; set; }
 
         public UserModel()
         {
@@ -37,9 +36,9 @@ namespace Blacksmith.WebApi.Models
             AccountStatus = AccountStatus.Inactive;
             AccountStatusExp = DateTime.UtcNow;
             LoginStatus = LoginStatus.Awaiting;
-            LoginStatusCode = string.Empty;
-            LoginAttempts = 1;
             LoginCode = string.Empty;
+            LoginAttempts = 1;
+            LockedCode = string.Empty;
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;

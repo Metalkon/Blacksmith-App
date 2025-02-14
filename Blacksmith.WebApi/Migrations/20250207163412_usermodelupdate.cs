@@ -42,14 +42,14 @@ namespace Blacksmith.WebApi.Migrations
                 defaultValue: 0);
 
             migrationBuilder.AddColumn<string>(
-                name: "LoginStatusCode",
+                name: "LoginCode",
                 table: "Users",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<DateTime>(
-                name: "LoginStatusCodeExp",
+                name: "LoginCodeExp",
                 table: "Users",
                 type: "datetime2",
                 nullable: false,
@@ -75,11 +75,11 @@ namespace Blacksmith.WebApi.Migrations
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "LoginStatusCode",
+                name: "LoginCode",
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "LoginStatusCodeExp",
+                name: "LoginCodeExp",
                 table: "Users");
 
             migrationBuilder.DropColumn(

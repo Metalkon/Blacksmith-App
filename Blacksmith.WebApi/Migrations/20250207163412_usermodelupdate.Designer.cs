@@ -201,11 +201,11 @@ namespace Blacksmith.WebApi.Migrations
                     b.Property<int>("LoginStatus")
                         .HasColumnType("int");
 
-                    b.Property<string>("LoginStatusCode")
+                    b.Property<string>("LoginCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("LoginStatusCodeExp")
+                    b.Property<DateTime>("LoginCodeExp")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Role")

@@ -58,7 +58,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                         if (user.LoginStatus == LoginStatus.LockedAwaiting)
                         {
                             user.LoginStatus = LoginStatus.Locked;
-                            user.LoginStatusCode = Guid.NewGuid().ToString();
+                            user.LoginCode = Guid.NewGuid().ToString();
                             bool sendLockedEmail = await SendEmailLocked(user);
                             if (sendLockedEmail == true)
                             {
@@ -186,7 +186,7 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             var subject = "Blacksmith App - Account Has Been Locked";
             var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginStatusCode}";
+                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
             return sentEmail;
         }

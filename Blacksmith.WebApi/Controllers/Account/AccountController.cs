@@ -33,6 +33,10 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
             RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken);
 
+            if (savedToken == null)
+            {
+                return BadRequest("Invalid Token");
+            }
             if (savedToken.User.AccountStatus == AccountStatus.Banned)
             {
                 return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
@@ -74,10 +78,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                 {
                     return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
                 }
-                if (user.LoginStatus == LoginStatus.Locked && user.LoginStatusCode == userConfirm.Code)
+                if (user.LoginStatus == LoginStatus.Locked && user.LoginCode == userConfirm.Code)
                 {
                     user.LoginStatus = LoginStatus.Active;
-                    user.LoginStatusCode = null;
+                    user.LoginCode = null;
                     user.LoginAttempts = 0;
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");
