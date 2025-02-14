@@ -33,13 +33,17 @@ namespace Blacksmith.WebApi.Controllers.Account
             }
             RefreshToken savedToken = await _db.RefreshTokens.Include(x => x.User).SingleOrDefaultAsync(x => x.Token == refreshToken);
 
-            if (savedToken.User.AccountStatus.Status == "Banned")
+            if (savedToken == null)
+            {
+                return BadRequest("Invalid Token");
+            }
+            if (savedToken.User.AccountStatus == AccountStatus.Banned)
             {
                 return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
             }
-            if (savedToken.User.AccountStatus.Status == "Suspended")
+            if (savedToken.User.AccountStatus == AccountStatus.Suspended)
             {
-                return StatusCode(403, $"Access Denied: Your login has been suspended until {savedToken.User.AccountStatus.StatusExp}.");
+                return StatusCode(403, $"Access Denied: Your login has been suspended until {savedToken.User.AccountStatusExp}.");
             }
             if (savedToken == null)
             {
@@ -66,19 +70,19 @@ namespace Blacksmith.WebApi.Controllers.Account
 
             if (user != null) 
             {
-                if (user.AccountStatus.Status == "Banned")
+                if (user.AccountStatus == AccountStatus.Banned)
                 {
                     return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
                 }
-                if (user.AccountStatus.Status == "Suspended")
+                if (user.AccountStatus == AccountStatus.Suspended)
                 {
-                    return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatus.StatusExp}.");
+                    return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
                 }
-                if (user.LoginStatus.Status.Contains("Locked") && user.LoginStatus.StatusCode == userConfirm.Code)
+                if (user.LoginStatus == LoginStatus.Locked && user.LoginCode == userConfirm.Code)
                 {
-                    user.LoginStatus.Status = "Active";
-                    user.LoginStatus.StatusCode = null;
-                    user.LoginStatus.LoginAttempts = 0;
+                    user.LoginStatus = LoginStatus.Active;
+                    user.LoginCode = null;
+                    user.LoginAttempts = 0;
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");
                 }

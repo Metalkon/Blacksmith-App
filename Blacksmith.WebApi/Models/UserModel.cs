@@ -3,21 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Blacksmith.WebApi.Models
 {
-    /*
-    Account Status:
-    - "Active", Normal user status
-    - "Inactive", Abnormal user status
-    - "Suspended", User cannot login for x amount of time
-    - "Banned", User is restricted from login, refresh token cannot be used
-
-    Login Status:
-    - "Active", Normal login status
-    - "Awaiting", User cannot attempt login/regiser for x minutes, and separate registration checks (null/existing) with this
-    - "Locked", User is restricted from login for x time
-    */
-
     public class UserModel
     {
+        // Basic Properties
         [Key]
         public int Id { get; set; }
         [StringLength(32)]
@@ -25,22 +13,32 @@ namespace Blacksmith.WebApi.Models
         [EmailAddress]
         public string Email { get; set; }
         public string Role { get; set; }
-        public AccountStatus AccountStatus { get; set; }
-        public LoginStatus LoginStatus { get; set; }
-        public string LoginCode { get; set; }
-        public DateTime LoginCodeExp { get; set; }
+        public bool Validated { get; set; } // New
+        public AccountStatus AccountStatus { get; set; } // New (Note: Add New Db Table For Banlists)
+        public DateTime AccountStatusExp { get; set; } // New
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public int GameDataId { get; set; }
         [ForeignKey("GameDataId")]
         public GameData GameData { get; set; }
 
+        // Login/Register Properties
+        public string LoginCode { get; set; }
+        public DateTime LoginCodeExp { get; set; }
+        public LoginStatus LoginStatus { get; set; }
+        public int LoginAttempts { get; set; }
+        public string LockedCode { get; set; }
+
         public UserModel()
         {
             Role = "User";
-            AccountStatus = new AccountStatus();
-            LoginStatus = new LoginStatus();
+            Validated = false;
+            AccountStatus = AccountStatus.Inactive;
+            AccountStatusExp = DateTime.UtcNow;
+            LoginStatus = LoginStatus.Awaiting;
             LoginCode = string.Empty;
+            LoginAttempts = 1;
+            LockedCode = string.Empty;
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -57,45 +55,37 @@ namespace Blacksmith.WebApi.Models
         public async Task<UserModel> UpdateStatus(UserModel user)
         {
             // AccountStatus
-            if (user.AccountStatus.Status == "Suspended" && user.AccountStatus.StatusExp <= DateTime.UtcNow)
+            if (user.AccountStatus == AccountStatus.Suspended && user.AccountStatusExp <= DateTime.UtcNow)
             {
-                user.AccountStatus.Status = "Active";
-                user.LoginStatus.LoginAttempts = 0;
+                user.AccountStatus = AccountStatus.Active;
+                user.LoginAttempts = 0;
             }
             // LoginStatus
-            if (user.LoginStatus.Status == "Awaiting" && user.LoginCodeExp <= DateTime.UtcNow)
+            if (user.LoginStatus == LoginStatus.Awaiting && user.LoginCodeExp <= DateTime.UtcNow)
             {
-                user.LoginStatus.Status = "Active";
+                user.LoginStatus = LoginStatus.Awaiting;
             }
-            if (user.LoginStatus.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow && user.LoginStatus.Status.Contains("Locked") == false)
+            if (user.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow && user.LoginStatus != LoginStatus.Locked)
             {
-                user.LoginStatus.Status = "Locked/Awaiting";
+                user.LoginStatus = LoginStatus.LockedAwaiting;
             }
             return user;
         }
     }
 
-    public class AccountStatus
+    public enum AccountStatus
     {
-        public bool Validated { get; set; }
-        public string Status { get; set; }
-        public DateTime? StatusExp { get; set; }
-        public AccountStatus()
-        {
-            Validated = false;
-            Status = "Inactive";
-        }
+        Active,
+        Inactive,
+        Suspended,
+        Banned
     }
 
-    public class LoginStatus
+    public enum LoginStatus
     {
-        public string Status { get; set; }
-        public string? StatusCode { get; set; }
-        public int LoginAttempts { get; set; }
-        public LoginStatus()
-        {
-            Status = "Awaiting";
-            LoginAttempts = 1;
-        }
+        Active,
+        Awaiting,
+        Locked,
+        LockedAwaiting
     }
 }

@@ -4,6 +4,7 @@ using Blacksmith.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blacksmith.WebApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250207163412_usermodelupdate")]
+    partial class usermodelupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,10 +188,6 @@ namespace Blacksmith.WebApi.Migrations
                     b.Property<int>("GameDataId")
                         .HasColumnType("int");
 
-                    b.Property<string>("LockedCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("LoginAttempts")
                         .HasColumnType("int");
 
@@ -201,6 +200,13 @@ namespace Blacksmith.WebApi.Migrations
 
                     b.Property<int>("LoginStatus")
                         .HasColumnType("int");
+
+                    b.Property<string>("LoginCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LoginCodeExp")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Role")
                         .IsRequired()
