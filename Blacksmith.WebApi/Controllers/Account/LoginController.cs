@@ -2,6 +2,7 @@
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -12,15 +13,17 @@ namespace Blacksmith.WebApi.Controllers.Account
     [ApiController]
     public class LoginController : ControllerBase
     {
+        private readonly AuthService _authService;
         private readonly ApplicationDbContext _db;
         private readonly EmailSender _emailSender;
         private readonly TokenService _tokenService;
 
-        public LoginController(ApplicationDbContext context, EmailSender emailSender, TokenService tokenService)
+        public LoginController(AuthService authService, ApplicationDbContext db, EmailSender emailSender, TokenService tokenService)
         {
-            _db = context;
+            _db = db;
+            _tokenService = tokenService;
+            _authService = authService;
             _emailSender = emailSender;
-            _tokenService=tokenService;
         }
 
         [AllowAnonymous]
@@ -29,166 +32,107 @@ namespace Blacksmith.WebApi.Controllers.Account
         {
             try
             {
-                if (!ModelState.IsValid || loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Username))
+                if (ModelState.IsValid == false || loginRequest == null)
+                    return BadRequest(ModelState);
+
+                // Note: trim/limit emails and username so extremely long strings cannot be inputted, and check code length
+
+                // Find the user in the database
+                UserModel? user = await _db.Users.FirstOrDefaultAsync(x => 
+                    x.Email.ToLower() == loginRequest.Email.ToLower() 
+                    || x.Username.ToLower() == loginRequest.Username.ToLower());
+
+                // Confirm if the user exists/matches
+                var confirmUser = await _authService.ConfirmUser(user, loginRequest);
+                if (confirmUser.statusCode != 200) 
+                    return StatusCode(confirmUser.statusCode, confirmUser.message);
+
+                // Update the user status on login attempt
+                user = await _authService.UpdateStatus(user);
+                await _db.SaveChangesAsync();
+
+                // Check if the user is allowed to login
+                var checkUser = await _authService.CheckUserStatus(user);
+                if (checkUser.statusCode != 200)
+                    return StatusCode(checkUser.statusCode, checkUser.message);
+
+                // Check if a locked email and code needs to be sent
+                var lockedEmail = await _authService.LockedEmail(user);
+                if (lockedEmail.statusCode != 200)
                 {
-                    return BadRequest("Invalid Email or Username");
+                    await _db.SaveChangesAsync();
+                    return StatusCode(lockedEmail.statusCode, lockedEmail.message);
                 }
 
-                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == loginRequest.Email.ToLower() || x.Username.ToLower() == loginRequest.Username.ToLower());
-                if (user != null)
-                {
-                    if ((loginRequest.Email.ToLower() == user.Email.ToLower() && loginRequest.Username.ToLower() != user.Username.ToLower())
-                        || (loginRequest.Email.ToLower() != user.Email.ToLower() && loginRequest.Username.ToLower() == user.Username.ToLower()))
-                    {
-                        return BadRequest("Incorrect Email or Username");
-                    }
+                // Initiate login process
+                user.LoginCode = Guid.NewGuid().ToString();
+                user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
+                user.LoginStatus = LoginStatus.Awaiting;
+                user.LoginAttempts++;
 
-                    user = await user.UpdateUser(user);
+                var sendEmail = await _authService.SendEmailLogin(user);
+                if (sendEmail.statusCode != 200)
+                    return StatusCode(sendEmail.statusCode, sendEmail.message);
 
-                    if (user.AccountStatus == AccountStatus.Banned)
-                    {
-                        return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
-                    }
-                    if (user.AccountStatus == AccountStatus.Suspended)
-                    {
-                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
-                    }
-                    if (user.Validated && user.LoginStatus == LoginStatus.Locked)
-                    {
-                        if (user.LoginStatus == LoginStatus.LockedAwaiting)
-                        {
-                            user.LoginStatus = LoginStatus.Locked;
-                            user.LoginCode = Guid.NewGuid().ToString();
-                            bool sendLockedEmail = await SendEmailLocked(user);
-                            if (sendLockedEmail == true)
-                            {
-                                await _db.SaveChangesAsync();
-                                return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. An email has been sent containing an 'Unlock' URL if you wish to attempt to login again.");
-                            }
-                            else
-                            {
-                                return StatusCode(500, "Failed to send the email. Please try again later");
-                            }
-                        }
-                        return StatusCode(403, "Access Denied: Login with this email address has been locked due to too many failed attempts. To unlock this email address, you will need to confirm ownership by using the 'Unlock' URL sent in the most recently sent email.");
-                    }
-                    if (user.Validated && user.LoginCodeExp >= DateTime.UtcNow)
-                    {
-                        return BadRequest($"Access Denied: Please wait before attempting to log in again.");
-                    }
-                    if (user.Validated == false)
-                    {
-                        return BadRequest("Access Denied: Your account has not been validated. Please check your email for verification instructions.");
-                    }
-                    if (user.Validated == true && user.Email.ToLower() == loginRequest.Email.ToLower() && user.Username.ToLower() == loginRequest.Username.ToLower())
-                    {
-                        user.LoginCode = Guid.NewGuid().ToString();
-                        user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
-                        user.LoginStatus = LoginStatus.Awaiting;
-                        user.LoginAttempts++;
-                        await _db.SaveChangesAsync();
-                        bool sendEmail = await SendEmailLogin(user);
+                await _db.SaveChangesAsync();
 
-                        if (sendEmail == true)
-                        {
-                            return Ok($"An Email to complete your login has been sent to {loginRequest.Email}");
-                        }
-                        if (sendEmail == false)
-                        {
-                            return StatusCode(500, "Failed to send the login email. Please try again later");
-                        }
-                    }
-                }
-                if (user == null)
-                {
-                    return BadRequest("User Doesn't Exist");
-                }
-                return BadRequest();
+                return Ok(sendEmail.message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
         }
-
+        
         [AllowAnonymous]
         [HttpPost("confirmation")]
         public async Task<ActionResult<TokenDTO>> LoginConfirmation(UserConfirmDTO userConfirm)
         {
             try
             {
-                if (!ModelState.IsValid || userConfirm == null || string.IsNullOrEmpty(userConfirm.Code) || string.IsNullOrEmpty(userConfirm.User.Username) || string.IsNullOrEmpty(userConfirm.User.Email))
+                if (ModelState.IsValid == false || userConfirm == null)
+                    return BadRequest(ModelState);               
+
+                // Find the user in the database
+                UserModel? user = await _db.Users.SingleOrDefaultAsync(x => 
+                x.Email.ToLower() == userConfirm.User.Email.ToLower() 
+                && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+
+                // Confirm if the user exists/matches
+                var confirmUser = await _authService.ConfirmUser(user, userConfirm.User);
+                if (confirmUser.statusCode != 200)
+                    return StatusCode(confirmUser.statusCode, confirmUser.message);
+
+
+                if (user.LoginCodeExp <= DateTime.UtcNow)
                 {
-                    return BadRequest("Invalid Request");
+                    return BadRequest("The time to confirm your email address has expired, please try logging in again");
+                }
+                if (user.LoginCode != userConfirm.Code)
+                {
+                    return BadRequest("Incorrect Code");
                 }
 
-                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
+                user.LoginCode = Guid.NewGuid().ToString();
+                user.LoginCodeExp = DateTime.UtcNow;
+                user.LoginAttempts = 0;
+                user.LoginStatus = LoginStatus.Active;
 
-                if (user != null)
+                await _db.SaveChangesAsync();
+
+                RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
+                var tokenDTO = new TokenDTO()
                 {
-                    if (user.AccountStatus == AccountStatus.Banned)
-                    {
-                        return StatusCode(403, $"Access Denied: Your account has been permanently banned.");
-                    }
-                    if (user.AccountStatus == AccountStatus.Suspended)
-                    {
-                        return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
-                    }
-                    if (user.LoginStatus != LoginStatus.Awaiting)
-                    {
-                        return BadRequest("Your account is not currently awaiting confirmation to login");
-                    }
-                    if (user.LoginCodeExp <= DateTime.UtcNow)
-                    {
-                        return BadRequest("The time to confirm your email address has expired, please try logging in again");
-                    }
-                    if (user.LoginCode != userConfirm.Code)
-                    {
-                        return BadRequest("Incorrect Code");
-                    }
-                    if (user.Validated == true)
-                    {
-                        user.LoginCode = Guid.NewGuid().ToString();
-                        user.LoginCodeExp = DateTime.UtcNow;
-                        user.LoginAttempts = 0;
-                        user.LoginStatus = LoginStatus.Active;
+                    RefreshToken = newRefreshToken.Token,
+                    Jwt = await _tokenService.GenerateJwt(user)
+                };
 
-                        await _db.SaveChangesAsync();
-
-                        RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
-                        var tokenDTO = new TokenDTO()
-                        {
-                            RefreshToken = newRefreshToken.Token,
-                            Jwt = await _tokenService.GenerateJwt(user)
-                        };
-                        return Ok(tokenDTO);
-                    }
-                }               
-                return BadRequest();
+                return Ok(tokenDTO);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
             }
-        }
-
-        private async Task<bool> SendEmailLogin(UserModel currentUser)
-        {
-            var subject = "Blacksmith App - Login Verification";
-            var message = $"Welcome to Blacksmith Web App!\n\n" +
-                          $"To complete your login, click the link below (valid for 15 minutes):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=Login&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
-            bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
-            return sentEmail;
-        }
-
-        private async Task<bool> SendEmailLocked(UserModel currentUser)
-        {
-            var subject = "Blacksmith App - Account Has Been Locked";
-            var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
-                          $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={currentUser.Username}&email={currentUser.Email}&code={currentUser.LoginCode}";
-            bool sentEmail = await _emailSender.SendEmailAsync(currentUser.Email, subject, message);
-            return sentEmail;
-        }
+        }        
     }
 }
