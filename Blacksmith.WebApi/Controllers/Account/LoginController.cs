@@ -2,7 +2,6 @@
 using Blacksmith.WebApi.Models;
 using Blacksmith.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
@@ -15,15 +14,13 @@ namespace Blacksmith.WebApi.Controllers.Account
     {
         private readonly AuthService _authService;
         private readonly ApplicationDbContext _db;
-        private readonly EmailSender _emailSender;
         private readonly TokenService _tokenService;
 
-        public LoginController(AuthService authService, ApplicationDbContext db, EmailSender emailSender, TokenService tokenService)
+        public LoginController(AuthService authService, ApplicationDbContext db, TokenService tokenService)
         {
             _db = db;
             _tokenService = tokenService;
             _authService = authService;
-            _emailSender = emailSender;
         }
 
         [AllowAnonymous]
@@ -34,8 +31,6 @@ namespace Blacksmith.WebApi.Controllers.Account
             {
                 if (ModelState.IsValid == false || loginRequest == null)
                     return BadRequest(ModelState);
-
-                // Note: trim/limit emails and username so extremely long strings cannot be inputted, and check code length
 
                 // Find the user in the database
                 UserModel? user = await _db.Users.FirstOrDefaultAsync(x => 
@@ -103,22 +98,16 @@ namespace Blacksmith.WebApi.Controllers.Account
                 if (confirmUser.statusCode != 200)
                     return StatusCode(confirmUser.statusCode, confirmUser.message);
 
-
                 if (user.LoginCodeExp <= DateTime.UtcNow)
-                {
                     return BadRequest("The time to confirm your email address has expired, please try logging in again");
-                }
                 if (user.LoginCode != userConfirm.Code)
-                {
                     return BadRequest("Incorrect Code");
-                }
 
+                // Compelte login process
                 user.LoginCode = Guid.NewGuid().ToString();
                 user.LoginCodeExp = DateTime.UtcNow;
                 user.LoginAttempts = 0;
                 user.LoginStatus = LoginStatus.Active;
-
-                await _db.SaveChangesAsync();
 
                 RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
                 var tokenDTO = new TokenDTO()
@@ -126,6 +115,8 @@ namespace Blacksmith.WebApi.Controllers.Account
                     RefreshToken = newRefreshToken.Token,
                     Jwt = await _tokenService.GenerateJwt(user)
                 };
+
+                await _db.SaveChangesAsync();
 
                 return Ok(tokenDTO);
             }
