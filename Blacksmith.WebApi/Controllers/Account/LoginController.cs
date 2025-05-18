@@ -38,7 +38,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     || x.Username.ToLower() == loginRequest.Username.ToLower());
 
                 // Confirm if the user exists/matches
-                var confirmUser = await _authService.ConfirmUser(user, loginRequest);
+                var confirmUser = await _authService.ConfirmUserLogin(user, loginRequest);
                 if (confirmUser.statusCode != 200) 
                     return StatusCode(confirmUser.statusCode, confirmUser.message);
 
@@ -94,7 +94,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                 && x.Username.ToLower() == userConfirm.User.Username.ToLower());
 
                 // Confirm if the user exists/matches
-                var confirmUser = await _authService.ConfirmUser(user, userConfirm.User);
+                var confirmUser = await _authService.ConfirmUserLogin(user, userConfirm.User);
                 if (confirmUser.statusCode != 200)
                     return StatusCode(confirmUser.statusCode, confirmUser.message);
 

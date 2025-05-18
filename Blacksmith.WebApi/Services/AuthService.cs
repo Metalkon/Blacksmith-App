@@ -1,4 +1,5 @@
 ﻿using Blacksmith.WebApi.Models;
+using Microsoft.AspNetCore.Identity.Data;
 using Shared_Classes.Models;
 
 namespace Blacksmith.WebApi.Services
@@ -13,7 +14,7 @@ namespace Blacksmith.WebApi.Services
         }
 
         // Confirm if the user exists/matches
-        public async Task<(int statusCode, string message)> ConfirmUser(UserModel user, UserDTO loginRequest)
+        public async Task<(int statusCode, string message)> ConfirmUserLogin(UserModel user, UserDTO loginRequest)
         {
             if (user == null)
                 return (404, "User Doesn't Exist");
@@ -23,6 +24,30 @@ namespace Blacksmith.WebApi.Services
 
             if (user.Validated == false)
                 return (400, "Access Denied: Account not validated");
+
+            return (200, string.Empty);
+        }
+
+        // Confirm if the email and username are available
+        public async Task<(int statusCode, string message)> ConfirmUserRegister(UserModel? user, UserModel? userByUsername)
+        {
+            if (user != null)
+            {
+                if (user.Validated)
+                    return (400, "Email or Username has already been taken");
+
+                if (user.LoginCodeExp >= DateTime.UtcNow)
+                    return (400, $"Please try again in {(user.LoginCodeExp.Date - DateTime.Now.Date).Days} days, or use the most recent email sent to complete registration");
+            }
+
+            if (userByUsername != null && (user == null || userByUsername.Id != user.Id))
+            {
+                if (userByUsername.Validated)
+                    return (400, "Email or Username has already been taken");
+
+                if (userByUsername.LoginCodeExp >= DateTime.UtcNow)
+                    return (400, "Email or Username has already been taken");
+            }
 
             return (200, string.Empty);
         }
@@ -45,17 +70,34 @@ namespace Blacksmith.WebApi.Services
             return (200, string.Empty);
         }
 
+        // Generate or update user
+        public async Task<UserModel> CreateUpdateUser(UserModel user, UserDTO registerRequest)
+        {
+            user.Email = registerRequest.Email;
+            user.Username = registerRequest.Username;
+            user.LoginStatus = LoginStatus.Awaiting;
+            user.LoginAttempts++; // note: new acc starts with 2 attempts
+            user.LoginCode = Guid.NewGuid().ToString(); // note: already gives login code and such after using this
+            user.LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            return user;
+        }
+
         // Update the user status on login attempt
         public async Task<UserModel> UpdateStatus(UserModel user)
         {
-            if (user.AccountStatus == AccountStatus.Suspended && user.AccountStatusExp <= DateTime.UtcNow)
+            if (user.Validated == true)
             {
-                user.AccountStatus = AccountStatus.Active;
-                user.LoginAttempts = 0;
-            }
+                if (user.AccountStatus == AccountStatus.Suspended && user.AccountStatusExp <= DateTime.UtcNow)
+                {
+                    user.AccountStatus = AccountStatus.Active;
+                    user.LoginAttempts = 0;
+                }
 
-            if (user.LoginStatus == LoginStatus.Awaiting && user.LoginCodeExp <= DateTime.UtcNow)
-                user.LoginStatus = LoginStatus.Active;
+                if (user.LoginStatus == LoginStatus.Awaiting && user.LoginCodeExp <= DateTime.UtcNow)
+                    user.LoginStatus = LoginStatus.Active;
+            }
 
             if (user.LoginAttempts == 4 && user.LoginStatus != LoginStatus.Locked)
                 user.LoginStatus = LoginStatus.LockedAwaiting;
