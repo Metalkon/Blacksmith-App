@@ -35,35 +35,35 @@ namespace Blacksmith.WebApi.Controllers.Account
                     return BadRequest(ModelState);
 
                 // Find users by email and username separately
-                var user = await _db.Users.FirstOrDefaultAsync(x =>
+                var userByEmail = await _db.Users.FirstOrDefaultAsync(x =>
                     x.Email.ToLower() == registerRequest.Email.ToLower());
 
                 var userByUsername = await _db.Users.FirstOrDefaultAsync(x =>
                     x.Username.ToLower() == registerRequest.Username.ToLower());
 
                 // Confirm if the email and username are available
-                var confirmUser = await _authService.ConfirmUserRegister(user, userByUsername);
+                var confirmUser = await _authService.ConfirmUserRegister(userByEmail, userByUsername);
                 if (confirmUser.statusCode != 200)
                     return StatusCode(confirmUser.statusCode, confirmUser.message);
 
-                if (user == null)
+                if (userByEmail == null)
                 {
-                    user = new UserModel(); // maybe allow or require input into the constructor for some values like name/email
-                    user.Email = registerRequest.Email;
-                    user.Username = registerRequest.Username;
-                    _db.Users.Add(user);
+                    userByEmail = new UserModel(); // maybe allow or require input into the constructor for some values like name/email
+                    userByEmail.Email = registerRequest.Email;
+                    userByEmail.Username = registerRequest.Username;
+                    _db.Users.Add(userByEmail);
                 }
                 else
                 {
-                    user = await _authService.CreateUpdateUser(user, registerRequest);
+                    userByEmail = await _authService.CreateUpdateUser(userByEmail, registerRequest);
                 }
 
                 // Update the user status on register attempt
-                user = await _authService.UpdateStatus(user);
+                userByEmail = await _authService.UpdateStatus(userByEmail);
                 await _db.SaveChangesAsync();
 
                 // Check if a locked email and code needs to be sent
-                var lockedEmail = await _authService.LockedEmail(user);
+                var lockedEmail = await _authService.LockedEmail(userByEmail);
                 if (lockedEmail.statusCode != 200)
                 {
                     await _db.SaveChangesAsync();
@@ -71,12 +71,12 @@ namespace Blacksmith.WebApi.Controllers.Account
                 }
 
                 // Initiate registration process
-                user.LoginCode = Guid.NewGuid().ToString();
-                user.LoginCodeExp = DateTime.UtcNow.AddMinutes(1);
-                user.LoginStatus = LoginStatus.Awaiting;
-                user.LoginAttempts++; // by this point, new acc has 3 login attempts (edit: now 2 with separating usermodel creation)
+                userByEmail.LoginCode = Guid.NewGuid().ToString();
+                userByEmail.LoginCodeExp = DateTime.UtcNow.AddMinutes(1);
+                userByEmail.LoginStatus = LoginStatus.Awaiting;
+                userByEmail.LoginAttempts++;
 
-                var sendEmail = await _authService.SendEmailLogin(user);
+                var sendEmail = await _authService.SendEmailLogin(userByEmail);
                 if (sendEmail.statusCode != 200)
                     return StatusCode(sendEmail.statusCode, sendEmail.message);
 

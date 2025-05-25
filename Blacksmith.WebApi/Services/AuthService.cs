@@ -19,6 +19,9 @@ namespace Blacksmith.WebApi.Services
             if (user == null)
                 return (404, "User Doesn't Exist");
 
+            Console.WriteLine(user.Email);
+            Console.WriteLine(loginRequest.Email);
+
             if (user.Username != loginRequest.Username || user.Email != loginRequest.Email)
                 return (400, "Invalid Username or Email");
 
@@ -29,24 +32,33 @@ namespace Blacksmith.WebApi.Services
         }
 
         // Confirm if the email and username are available
-        public async Task<(int statusCode, string message)> ConfirmUserRegister(UserModel? user, UserModel? userByUsername)
+        public async Task<(int statusCode, string message)> ConfirmUserRegister(UserModel? userByEmail, UserModel? userByUsername)
         {
-            if (user != null)
+            if (userByEmail != null)
             {
-                if (user.Validated)
+                if (userByEmail.Validated)
                     return (400, "Email or Username has already been taken");
 
-                if (user.LoginCodeExp >= DateTime.UtcNow)
-                    return (400, $"Please try again in {(user.LoginCodeExp.Date - DateTime.Now.Date).Days} days, or use the most recent email sent to complete registration");
+                if (userByEmail.LoginCodeExp >= DateTime.UtcNow)
+                    return (400, $"Please try again in {(userByEmail.LoginCodeExp.Date - DateTime.Now.Date).Days} days, or use the most recent email sent to complete registration");
             }
 
-            if (userByUsername != null && (user == null || userByUsername.Id != user.Id))
+            if (userByEmail != null && (userByUsername == null || userByUsername.Id != userByEmail.Id))
+            {
+                if (userByEmail.Validated)
+                    return (400, "Email or Username has already been taken");
+
+                if (userByEmail.LoginCodeExp >= DateTime.UtcNow)
+                    return (400, "You are unable to attempt to register again so soon again after your previous attempt");
+            }
+
+            if (userByUsername != null && (userByEmail == null || userByUsername.Id != userByEmail.Id))
             {
                 if (userByUsername.Validated)
                     return (400, "Email or Username has already been taken");
 
                 if (userByUsername.LoginCodeExp >= DateTime.UtcNow)
-                    return (400, "Email or Username has already been taken");
+                    return (400, "You are unable to attempt to register again so soon again after your previous attempt");
             }
 
             return (200, string.Empty);
