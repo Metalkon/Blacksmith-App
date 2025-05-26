@@ -76,7 +76,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                 userByEmail.LoginStatus = LoginStatus.Awaiting;
                 userByEmail.LoginAttempts++;
 
-                var sendEmail = await _authService.SendEmailLogin(userByEmail);
+                var sendEmail = await _authService.SendEmailRegister(userByEmail);
                 if (sendEmail.statusCode != 200)
                     return StatusCode(sendEmail.statusCode, sendEmail.message);
 
@@ -106,16 +106,8 @@ namespace Blacksmith.WebApi.Controllers.Account
                 x.Email.ToLower() == userConfirm.User.Email.ToLower()
                 && x.Username.ToLower() == userConfirm.User.Username.ToLower());
 
-                // Incomplete Area
-
-
-
-
-                // Confirm if the user exists/matches
-                var confirmUser = await _authService.ConfirmUserLogin(user, userConfirm.User);
-                if (confirmUser.statusCode != 200)
-                    return StatusCode(confirmUser.statusCode, confirmUser.message);
-
+                if (user.Validated)
+                    return BadRequest("Email or Username has already been taken");
                 if (user.LoginCodeExp <= DateTime.UtcNow)
                     return BadRequest("The time to confirm your email address has expired, please try logging in again");
                 if (user.LoginCode != userConfirm.Code)
@@ -140,80 +132,6 @@ namespace Blacksmith.WebApi.Controllers.Account
                 await _db.SaveChangesAsync();
 
                 return Ok(tokenDTO);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.GetType().Name} - {ex.Message}");
-            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // old
-            try
-            {
-                if (!ModelState.IsValid || userConfirm == null || string.IsNullOrEmpty(userConfirm.User.Username) || string.IsNullOrEmpty(userConfirm.User.Email) || string.IsNullOrEmpty(userConfirm.Code))
-                {
-                    return BadRequest("Invalid Request");
-                }
-
-                UserModel user = await _db.Users.SingleOrDefaultAsync(x => x.Email.ToLower() == userConfirm.User.Email.ToLower() && x.Username.ToLower() == userConfirm.User.Username.ToLower());
-
-                if (user != null)
-                {
-                    if (user.Validated == true)
-                    {
-                        return BadRequest("Your account has already been validated.");
-                    }
-                    if (user.LoginStatus != LoginStatus.Awaiting)
-                    {
-                        return BadRequest("Your account is not currently awaiting confirmation to register.");
-                    }
-                    if (user.LoginCode != userConfirm.Code)
-                    {
-                        return BadRequest("The provided login code is invalid.");
-                    }
-                    if (user.LoginCodeExp <= DateTime.UtcNow)
-                    {
-                        return BadRequest("The time to confirm your email address has expired, please try registering again");
-                    }
-                    if (user.Validated == false)
-                    {
-                        user.Validated = true;
-                        user.AccountStatus = AccountStatus.Active;
-                        user.LoginCodeExp = DateTime.UtcNow;
-                        user.LoginStatus = LoginStatus.Active;
-                        user.LoginAttempts = 0;
-                        user.UpdatedAt = DateTime.UtcNow;
-                        user.CreatedAt = DateTime.UtcNow;
-
-                        await _db.SaveChangesAsync();
-
-                        RefreshToken newRefreshToken = await _tokenService.GenerateRefreshToken(user);
-                        var tokenDTO = new TokenDTO()
-                        {
-                            RefreshToken = newRefreshToken.Token,
-                            Jwt = await _tokenService.GenerateJwt(user)
-                        };
-                        return Ok(tokenDTO);
-                    }
-                }
-                if (user == null)
-                {
-                    return BadRequest("User Doesn't Exist");
-                }
-                return BadRequest();
             }
             catch (Exception ex)
             {

@@ -19,9 +19,6 @@ namespace Blacksmith.WebApi.Services
             if (user == null)
                 return (404, "User Doesn't Exist");
 
-            Console.WriteLine(user.Email);
-            Console.WriteLine(loginRequest.Email);
-
             if (user.Username != loginRequest.Username || user.Email != loginRequest.Email)
                 return (400, "Invalid Username or Email");
 
@@ -146,6 +143,21 @@ namespace Blacksmith.WebApi.Services
                 return (500, "Failed to send the email. Please try again later");
 
             return (200, $"An Email to complete your login has been sent to {user.Email}");
+        }
+
+        // Send login code to the user's email
+        public async Task<(int statusCode, string message)> SendEmailRegister(UserModel user)
+        {
+            var subject = "Blacksmith App - Register Verification";
+            var message = $"Welcome to Blacksmith Web App!\n\n" +
+                          $"To complete your registration, click the link below (valid for 15 minutes):\n" +
+                          $"https://localhost:8001/confirmation?confirmType=Register&username={user.Username}&email={user.Email}&code={user.LoginCode}";
+            bool sentEmail = await _emailSender.SendEmailAsync(user.Email, subject, message);
+
+            if (sentEmail == false)
+                return (500, "Failed to send the email. Please try again later");
+
+            return (200, $"An Email to complete your Registration has been sent to {user.Email}");
         }
 
         // Send locked email to the user's email
