@@ -78,10 +78,10 @@ namespace Blacksmith.WebApi.Controllers.Account
                 {
                     return StatusCode(403, $"Access Denied: Your login has been suspended until {user.AccountStatusExp}.");
                 }
-                if (user.LoginStatus == LoginStatus.Locked && user.LoginCode == userConfirm.Code)
+                if (user.LoginStatus == LoginStatus.Locked && user.LockedCode == userConfirm.Code)
                 {
                     user.LoginStatus = LoginStatus.Active;
-                    user.LoginCode = null;
+                    user.LockedCode = null;
                     user.LoginAttempts = 0;
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");

@@ -37,39 +37,12 @@ namespace Blacksmith.WebApi.Models
             AccountStatusExp = DateTime.UtcNow;
             LoginStatus = LoginStatus.Awaiting;
             LoginCode = string.Empty;
-            LoginAttempts = 1;
+            LoginAttempts = 0;
             LockedCode = string.Empty;
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             GameData = new GameData();
-        }
-
-        // Update the user after fetching it from the database
-        public async Task<UserModel> UpdateUser(UserModel user)
-        {
-            user = await UpdateStatus(user);
-            return user;
-        }
-
-        public async Task<UserModel> UpdateStatus(UserModel user)
-        {
-            // AccountStatus
-            if (user.AccountStatus == AccountStatus.Suspended && user.AccountStatusExp <= DateTime.UtcNow)
-            {
-                user.AccountStatus = AccountStatus.Active;
-                user.LoginAttempts = 0;
-            }
-            // LoginStatus
-            if (user.LoginStatus == LoginStatus.Awaiting && user.LoginCodeExp <= DateTime.UtcNow)
-            {
-                user.LoginStatus = LoginStatus.Awaiting;
-            }
-            if (user.LoginAttempts >= 3 && user.LoginCodeExp <= DateTime.UtcNow && user.LoginStatus != LoginStatus.Locked)
-            {
-                user.LoginStatus = LoginStatus.LockedAwaiting;
-            }
-            return user;
         }
     }
 
