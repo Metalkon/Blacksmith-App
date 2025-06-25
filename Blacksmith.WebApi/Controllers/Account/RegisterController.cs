@@ -114,6 +114,7 @@ namespace Blacksmith.WebApi.Controllers.Account
                     return BadRequest("Incorrect Code");
 
                 // Compelte register process (edit: pasted from old)
+                user.Role = "User";
                 user.Validated = true;
                 user.AccountStatus = AccountStatus.Active;
                 user.LoginCodeExp = DateTime.UtcNow;

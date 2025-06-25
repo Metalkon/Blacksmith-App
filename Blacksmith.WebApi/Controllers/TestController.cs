@@ -37,6 +37,16 @@ namespace Blacksmith.WebApi.Controllers
             return Ok(findPotato);
         }
 
+        [HttpGet("ReturnItemManager")]
+        public async Task<ActionResult<Item>> ReturnItemManager()
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            Console.WriteLine(_itemManager.Items.ToString);
+
+            return Ok(_itemManager.Items);
+        }
+
     }
 }
 

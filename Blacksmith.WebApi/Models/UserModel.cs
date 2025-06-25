@@ -31,7 +31,7 @@ namespace Blacksmith.WebApi.Models
 
         public UserModel()
         {
-            Role = "User";
+            Role = "None";
             Validated = false;
             AccountStatus = AccountStatus.Inactive;
             AccountStatusExp = DateTime.UtcNow;

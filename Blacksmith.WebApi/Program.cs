@@ -9,7 +9,7 @@ namespace Blacksmith.WebApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -28,12 +28,10 @@ namespace Blacksmith.WebApi
                       .AllowCredentials();
             }));
 
-
             builder.Services.AddTransient<EmailSender>();
             builder.Services.AddTransient<AuthService>();
             builder.Services.AddTransient<TokenService>();
             builder.Services.AddSingleton<ItemManager>();
-
 
             // Jwt/Auth stuff 
             builder.Services.AddAuthentication(x =>
@@ -45,8 +43,8 @@ namespace Blacksmith.WebApi
             {
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"], // localhost 8000
-                    ValidAudience = builder.Configuration["JwtSettings:Audience"], // localhost 8000
+                    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                    ValidAudience = builder.Configuration["JwtSettings:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey
                     (Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
                     ValidateIssuer = true,
@@ -65,11 +63,13 @@ namespace Blacksmith.WebApi
 
             var app = builder.Build();
 
-            // Prepare ItemManager List
+            /*
+            // Initialize ItemManager before starting the app
             using (var scope = app.Services.CreateScope())
             {
                 var itemManager = scope.ServiceProvider.GetRequiredService<ItemManager>();
-            }
+                await itemManager.UpdateFromDatabase();
+            }*/
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
