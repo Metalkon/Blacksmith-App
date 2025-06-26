@@ -11,10 +11,10 @@ namespace Blacksmith.WebApi.Controllers.Items
     [Authorize(Roles = "User")]
     public class InventoryController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly DbContextSqlServer _db;
         private readonly ItemManager _itemManager;
 
-        public InventoryController(ApplicationDbContext context, ItemManager itemManager)
+        public InventoryController(DbContextSqlServer context, ItemManager itemManager)
         {
             _db = context;
             _itemManager = itemManager;

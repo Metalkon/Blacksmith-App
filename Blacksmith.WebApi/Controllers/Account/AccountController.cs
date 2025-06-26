@@ -13,10 +13,10 @@ namespace Blacksmith.WebApi.Controllers.Account
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly DbContextSqlServer _db;
         private readonly TokenService _tokenService;
 
-        public AccountController(ApplicationDbContext context, TokenService tokenService)
+        public AccountController(DbContextSqlServer context, TokenService tokenService)
         {
             _db = context;
             _tokenService=tokenService;

@@ -15,9 +15,13 @@ namespace Blacksmith.WebApi
 
             // Add services to the container.
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            builder.Services.AddDbContext<DbContextSqlServer>(options =>
             {
                 options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]);
+            });
+            builder.Services.AddDbContext<DbContextSqlite>(options =>
+            {
+                options.UseSqlite(builder.Configuration.GetConnectionString("ItemDb"));
             });
 
             builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>
@@ -31,7 +35,6 @@ namespace Blacksmith.WebApi
             builder.Services.AddTransient<EmailSender>();
             builder.Services.AddTransient<AuthService>();
             builder.Services.AddTransient<TokenService>();
-            builder.Services.AddSingleton<ItemManager>();
 
             // Jwt/Auth stuff 
             builder.Services.AddAuthentication(x =>
@@ -62,14 +65,6 @@ namespace Blacksmith.WebApi
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
-            /*
-            // Initialize ItemManager before starting the app
-            using (var scope = app.Services.CreateScope())
-            {
-                var itemManager = scope.ServiceProvider.GetRequiredService<ItemManager>();
-                await itemManager.UpdateFromDatabase();
-            }*/
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

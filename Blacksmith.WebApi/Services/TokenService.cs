@@ -9,10 +9,10 @@ namespace Blacksmith.WebApi.Services
 {
     public class TokenService
     {
-        private readonly ApplicationDbContext _db;
+        private readonly DbContextSqlServer _db;
         private IConfiguration _config;
 
-        public TokenService(ApplicationDbContext context, IConfiguration config)
+        public TokenService(DbContextSqlServer context, IConfiguration config)
         {
             _db = context;
             _config = config;

@@ -14,16 +14,13 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AdminItemController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
-        private readonly ItemManager _itemManager;
-
-        public AdminItemController(ApplicationDbContext context, ItemManager itemManager)
+        private readonly DbContextSqlite _db;
+        public AdminItemController(DbContextSqlite context)
         {
             _db = context;
-            _itemManager = itemManager;
         }
         
         // Retrieves a paginated list of "items" from the database as a JSON response.
@@ -118,8 +115,6 @@ namespace Blacksmith.WebApi.Controllers
 
             _db.Items.Add(newItem);
             await _db.SaveChangesAsync();
-            await _itemManager.UpdateFromDatabase();
-
             return Ok(MapItemToDTO(newItem));
         }
 
@@ -141,8 +136,6 @@ namespace Blacksmith.WebApi.Controllers
             }
             _db.Items.Remove(item);
             await _db.SaveChangesAsync();
-            await _itemManager.UpdateFromDatabase();
-
             return NoContent();
         }
                 
@@ -176,8 +169,6 @@ namespace Blacksmith.WebApi.Controllers
                 */
 
                 await _db.SaveChangesAsync();
-                await _itemManager.UpdateFromDatabase();
-
                 return Ok(itemDto);
             }
             return BadRequest();

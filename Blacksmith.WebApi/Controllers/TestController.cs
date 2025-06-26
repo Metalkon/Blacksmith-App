@@ -13,10 +13,10 @@ namespace Blacksmith.WebApi.Controllers
     [Authorize(Roles = "Admin")]
     public class TestController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
+        private readonly DbContextSqlServer _db;
         private readonly ItemManager _itemManager;
 
-        public TestController(ApplicationDbContext context, ItemManager itemManager)
+        public TestController(DbContextSqlServer context, ItemManager itemManager)
         {
             _db = context;
             _itemManager = itemManager;

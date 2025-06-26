@@ -1,31 +1,17 @@
 ﻿using Blacksmith.WebApi.Data;
 using Blacksmith.WebApi.Models.Items;
-using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
 public class ItemManager
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly DbContextSqlite _db;
     public List<Item> Items { get; set; }
 
-    public ItemManager(IServiceProvider serviceProvider)
+    public ItemManager(DbContextSqlite context)
     {
-        _serviceProvider = serviceProvider;
-        Items = new List<Item>();
+        _db = context;
     }
-
-    public async Task UpdateFromDatabase()
-    {
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            
-            Items = await dbContext.Items.ToListAsync();               
-                        
-            //Environment.Exit(1);
-        }
-    }
-
+    
     public async Task<ItemDTO> GenerateItemDTO(ItemCrafted userItem)
     {
         Item baseItem = Items.FirstOrDefault(x => x.Id == userItem.ItemId);
@@ -61,7 +47,4 @@ public class ItemManager
 
         return itemDTO;
     }
-
-
-
 }

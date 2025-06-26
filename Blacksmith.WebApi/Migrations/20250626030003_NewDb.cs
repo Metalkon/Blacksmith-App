@@ -29,51 +29,6 @@ namespace Blacksmith.WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Items",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Rarity = table.Column<int>(type: "int", nullable: false),
-                    Tier = table.Column<int>(type: "int", nullable: false),
-                    Weight = table.Column<double>(type: "float", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Tradable = table.Column<bool>(type: "bit", nullable: false),
-                    BaseDurability = table.Column<int>(type: "int", nullable: false),
-                    BasePrice = table.Column<int>(type: "int", nullable: false),
-                    BaseScore = table.Column<int>(type: "int", nullable: false),
-                    BaseAttackPower = table.Column<int>(type: "int", nullable: false),
-                    BaseAttackSpeed = table.Column<int>(type: "int", nullable: false),
-                    BaseMagicPower = table.Column<int>(type: "int", nullable: false),
-                    BaseProtectionPhysical = table.Column<int>(type: "int", nullable: false),
-                    BaseProtectionMagic = table.Column<int>(type: "int", nullable: false),
-                    Recipe = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Items", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Materials",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Rarity = table.Column<int>(type: "int", nullable: false),
-                    Tier = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Materials", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TestPotatoes",
                 columns: table => new
                 {
@@ -95,13 +50,17 @@ namespace Blacksmith.WebApi.Migrations
                     Username = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoginCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoginCodeExp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Validated = table.Column<bool>(type: "bit", nullable: false),
+                    AccountStatus = table.Column<int>(type: "int", nullable: false),
+                    AccountStatusExp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     GameDataId = table.Column<int>(type: "int", nullable: false),
-                    AccountStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LoginStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LoginCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LoginCodeExp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LoginStatus = table.Column<int>(type: "int", nullable: false),
+                    LoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockedCode = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -149,12 +108,6 @@ namespace Blacksmith.WebApi.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Items");
-
-            migrationBuilder.DropTable(
-                name: "Materials");
-
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
 

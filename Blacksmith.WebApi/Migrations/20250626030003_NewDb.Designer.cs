@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Blacksmith.WebApi.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250113052306_ItemModelUpdate")]
-    partial class ItemModelUpdate
+    [DbContext(typeof(DbContextSqlServer))]
+    [Migration("20250626030003_NewDb")]
+    partial class NewDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,98 +45,6 @@ namespace Blacksmith.WebApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("GameData");
-                });
-
-            modelBuilder.Entity("Blacksmith.WebApi.Models.Items.Item", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("BaseAttackPower")
-                        .HasColumnType("float");
-
-                    b.Property<double>("BaseAttackSpeed")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BaseDurability")
-                        .HasColumnType("int");
-
-                    b.Property<double>("BaseMagicPower")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BasePrice")
-                        .HasColumnType("int");
-
-                    b.Property<double>("BaseProtectionMagic")
-                        .HasColumnType("float");
-
-                    b.Property<double>("BaseProtectionPhysical")
-                        .HasColumnType("float");
-
-                    b.Property<int>("BaseScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Rarity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Tier")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Tradable")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("Weight")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("Blacksmith.WebApi.Models.Items.Material", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Rarity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Tier")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Materials");
                 });
 
             modelBuilder.Entity("Blacksmith.WebApi.Models.RefreshToken", b =>
@@ -172,6 +80,12 @@ namespace Blacksmith.WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AccountStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AccountStatusExp")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -182,12 +96,22 @@ namespace Blacksmith.WebApi.Migrations
                     b.Property<int>("GameDataId")
                         .HasColumnType("int");
 
+                    b.Property<string>("LockedCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("LoginCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("LoginCodeExp")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("LoginStatus")
+                        .HasColumnType("int");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -200,6 +124,9 @@ namespace Blacksmith.WebApi.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
+
+                    b.Property<bool>("Validated")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -227,31 +154,6 @@ namespace Blacksmith.WebApi.Migrations
 
             modelBuilder.Entity("Blacksmith.WebApi.Models.GameData", b =>
                 {
-                    b.OwnsMany("Shared_Classes.Models.MaterialQuantity", "UserMaterials", b1 =>
-                        {
-                            b1.Property<int>("GameDataId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            b1.Property<int>("MaterialId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Quantity")
-                                .HasColumnType("int");
-
-                            b1.HasKey("GameDataId", "Id");
-
-                            b1.ToTable("GameData");
-
-                            b1.ToJson("UserMaterials");
-
-                            b1.WithOwner()
-                                .HasForeignKey("GameDataId");
-                        });
-
                     b.OwnsMany("Blacksmith.WebApi.Models.Items.ItemCrafted", "UserItems", b1 =>
                         {
                             b1.Property<int>("GameDataId")
@@ -293,16 +195,9 @@ namespace Blacksmith.WebApi.Migrations
                                 .HasForeignKey("GameDataId");
                         });
 
-                    b.Navigation("UserItems");
-
-                    b.Navigation("UserMaterials");
-                });
-
-            modelBuilder.Entity("Blacksmith.WebApi.Models.Items.Item", b =>
-                {
-                    b.OwnsMany("Shared_Classes.Models.MaterialQuantity", "Recipe", b1 =>
+                    b.OwnsMany("Shared_Classes.Models.MaterialQuantity", "UserMaterials", b1 =>
                         {
-                            b1.Property<int>("ItemId")
+                            b1.Property<int>("GameDataId")
                                 .HasColumnType("int");
 
                             b1.Property<int>("Id")
@@ -315,17 +210,19 @@ namespace Blacksmith.WebApi.Migrations
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.HasKey("ItemId", "Id");
+                            b1.HasKey("GameDataId", "Id");
 
-                            b1.ToTable("Items");
+                            b1.ToTable("GameData");
 
-                            b1.ToJson("Recipe");
+                            b1.ToJson("UserMaterials");
 
                             b1.WithOwner()
-                                .HasForeignKey("ItemId");
+                                .HasForeignKey("GameDataId");
                         });
 
-                    b.Navigation("Recipe");
+                    b.Navigation("UserItems");
+
+                    b.Navigation("UserMaterials");
                 });
 
             modelBuilder.Entity("Blacksmith.WebApi.Models.RefreshToken", b =>
@@ -347,63 +244,7 @@ namespace Blacksmith.WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Blacksmith.WebApi.Models.AccountStatus", "AccountStatus", b1 =>
-                        {
-                            b1.Property<int>("UserModelId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Status")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<DateTime?>("StatusExp")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<bool>("Validated")
-                                .HasColumnType("bit");
-
-                            b1.HasKey("UserModelId");
-
-                            b1.ToTable("Users");
-
-                            b1.ToJson("AccountStatus");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserModelId");
-                        });
-
-                    b.OwnsOne("Blacksmith.WebApi.Models.LoginStatus", "LoginStatus", b1 =>
-                        {
-                            b1.Property<int>("UserModelId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("LoginAttempts")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Status")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("StatusCode")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("UserModelId");
-
-                            b1.ToTable("Users");
-
-                            b1.ToJson("LoginStatus");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserModelId");
-                        });
-
-                    b.Navigation("AccountStatus")
-                        .IsRequired();
-
                     b.Navigation("GameData");
-
-                    b.Navigation("LoginStatus")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

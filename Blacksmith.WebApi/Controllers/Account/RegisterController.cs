@@ -14,10 +14,10 @@ namespace Blacksmith.WebApi.Controllers.Account
     public class RegisterController : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly ApplicationDbContext _db;
+        private readonly DbContextSqlServer _db;
         private readonly TokenService _tokenService;
 
-        public RegisterController(AuthService authService, ApplicationDbContext db, TokenService tokenService)
+        public RegisterController(AuthService authService, DbContextSqlServer db, TokenService tokenService)
         {
             _db = db;
             _tokenService = tokenService;
