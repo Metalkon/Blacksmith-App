@@ -10,16 +10,15 @@ namespace Blacksmith.WebApi.Controllers
 {
     [Route("api/Test")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
     public class TestController : ControllerBase
     {
         private readonly DbContextSqlServer _db;
-        private readonly ItemManager _itemManager;
+        private readonly ItemHelper _itemHelper;
 
-        public TestController(DbContextSqlServer context, ItemManager itemManager)
+        public TestController(DbContextSqlServer context, ItemHelper itemHelper)
         {
             _db = context;
-            _itemManager = itemManager;
+            _itemHelper = itemHelper;
         }
 
         [HttpGet("PotatoName")]
@@ -37,97 +36,26 @@ namespace Blacksmith.WebApi.Controllers
             return Ok(findPotato);
         }
 
-        [HttpGet("ReturnItemManager")]
-        public async Task<ActionResult<Item>> ReturnItemManager()
+        [HttpGet("ReturnItemHelper")]
+        public async Task<ActionResult<ItemDTO>> ReturnItemHelper()
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            Console.WriteLine(_itemManager.Items.ToString);
+            ItemCrafted test = new ItemCrafted()
+            {
+                ItemId = 2,
+                CraftId = new Guid().ToString(),
+                PrefixId = 1,
+                SuffixId = 1,
+                Score = 83,
+                Durability = 55,
+                Price = 500,
+            };
 
-            return Ok(_itemManager.Items);
+            var test2 = await _itemHelper.MapCraftedItemToItemDTO(test);
+
+            return Ok(test2);
         }
 
     }
 }
-
-
-/*
-        [HttpGet("TestItem")]
-        public async Task<ActionResult<TestPotato>> TestItem(string name)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            Item testItem = new Item()
-            {
-                Name = name,
-                Tier = 1,
-                Weight = 5.0,
-                Description = "Test item description"
-            };
-            _db.Items.Add(testItem);
-            _db.SaveChanges();
-
-            return Ok();
-        }
-
-        [HttpGet("ResetInventory")]
-        public async Task<ActionResult<TestPotato>> ResetInventory()
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            GameData userData = await _db.GameData.FirstOrDefaultAsync(x => x.Id == 1);
-            List<ItemCrafted> userItems = userData.UserItems;
-            userItems.Clear();
-            userItems.Add(new ItemCrafted());
-            _db.SaveChanges();
-
-            return Ok();
-        }
-
-        [HttpGet("CombineItem")]
-        public async Task<ActionResult<ItemDTO>> CombineItem(int userId, string craftId)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            List<ItemCrafted> userItems = (await _db.GameData.FirstAsync(x => x.Id == userId)).UserItems;
-            ItemCrafted item = userItems.FirstOrDefault(x => x.CraftId == craftId);
-
-            ItemDTO testItem = await _itemManager.GenerateItemDTO(item);
-
-            //_db.Items.Add(testItem);
-            //_db.SaveChanges();
-
-            return Ok(testItem);
-        }
-
-        [HttpGet("EditItem")]
-        public async Task<ActionResult<ItemEditDTO>> AddItem(int userId, string craftId, int newScore)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            List<ItemCrafted> userItems = (await _db.GameData.FirstAsync(x => x.Id == userId)).UserItems;
-            ItemCrafted item = userItems.FirstOrDefault(x => x.CraftId == craftId);
-            item.Score = newScore;
-
-            _db.SaveChanges();
-
-            return Ok();
-        }
-
-        [HttpGet("NewItem")]
-        public async Task<ActionResult<ItemEditDTO>> NewItem(int userId, string craftId, int newScore, int itemId)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            List<ItemCrafted> userItems = (await _db.GameData.FirstAsync(x => x.Id == userId)).UserItems;
-            userItems.Add(new ItemCrafted()
-            {
-                ItemId = itemId,
-                Score = newScore
-            });
-
-            _db.SaveChanges();
-
-            return Ok();
-        }
- */ 

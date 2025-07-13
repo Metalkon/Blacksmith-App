@@ -18,8 +18,11 @@ namespace Blacksmith.WebApi.Controllers
     public class AdminItemController : ControllerBase
     {
         private readonly DbContextSqlite _db;
-        public AdminItemController(DbContextSqlite context)
+        private readonly ItemHelper _itemHelper;
+
+        public AdminItemController(DbContextSqlite context, ItemHelper itemHelper)
         {
+            _itemHelper = itemHelper;
             _db = context;
         }
         
@@ -62,7 +65,7 @@ namespace Blacksmith.WebApi.Controllers
 
             foreach (Item item in itemList)
             {
-                ItemEditDTO itemDto = await MapItemToDTO(item);
+                ItemEditDTO itemDto = await _itemHelper.MapItemToEditDTO(item);
                 result.Data.Add(itemDto);
             }
             return Ok(result);
@@ -86,7 +89,7 @@ namespace Blacksmith.WebApi.Controllers
                 return NotFound();
             }
 
-            ItemEditDTO itemDto = await MapItemToDTO(item);
+            ItemEditDTO itemDto = await _itemHelper.MapItemToEditDTO(item);
 
             return Ok(itemDto);
         }
@@ -111,11 +114,11 @@ namespace Blacksmith.WebApi.Controllers
             itemDto.Tradable = itemDto.Tradable == null ? false : itemDto.Tradable;
             itemDto.Image = itemDto.Image == null ? "./images/Icon/Question_Mark.jpg" : itemDto.Image;
             */
-            Item newItem = await MapDTOToItem(itemDto);
+            Item newItem = await _itemHelper.MapDTOToItem(itemDto);
 
             _db.Items.Add(newItem);
             await _db.SaveChangesAsync();
-            return Ok(MapItemToDTO(newItem));
+            return Ok(_itemHelper.MapItemToEditDTO(newItem));
         }
 
         // Deletes a single item entry by id.
@@ -155,7 +158,7 @@ namespace Blacksmith.WebApi.Controllers
             }
             if (existingItem != null)
             {
-                existingItem = await MapDTOToItem(itemDto, existingItem);
+                existingItem = await _itemHelper.MapDTOToItem(itemDto, existingItem);
 
                 // Check Values, Set Defaults
                 /*
@@ -175,65 +178,6 @@ namespace Blacksmith.WebApi.Controllers
         }
         
 
-        private async Task<ItemEditDTO> MapItemToDTO(Item input)
-        {
-            ItemEditDTO itemDTO = new ItemEditDTO();
 
-            var inputProperties = typeof(Item).GetProperties();
-            var itemDTOProperties = typeof(ItemEditDTO).GetProperties();
-
-            foreach (var inputProp in inputProperties)
-            {
-                var itemDTOProp = itemDTOProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
-
-                if (itemDTOProp != null && itemDTOProp.CanWrite)
-                {
-                    var value = inputProp.GetValue(input);
-                    itemDTOProp.SetValue(itemDTO, value);
-                }
-            }
-
-            return itemDTO;
-        }
-
-        private async Task<Item> MapDTOToItem(ItemEditDTO input)
-        {
-            Item item = new Item();
-
-            var inputProperties = typeof(ItemEditDTO).GetProperties();
-            var itemProperties = typeof(Item).GetProperties();
-
-            foreach (var inputProp in inputProperties)
-            {
-                var itemProp = itemProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
-
-                if (itemProp != null && itemProp.CanWrite)
-                {
-                    var value = inputProp.GetValue(input);
-                    itemProp.SetValue(item, value);
-                }
-            }
-
-            return item;
-        }
-
-        private async Task<Item> MapDTOToItem(ItemEditDTO input, Item itemDb)
-        {
-            var inputProperties = typeof(ItemEditDTO).GetProperties();
-            var itemProperties = typeof(Item).GetProperties();
-
-            foreach (var inputProp in inputProperties)
-            {
-                var itemProp = itemProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
-
-                if (itemProp != null && itemProp.CanWrite)
-                {
-                    var value = inputProp.GetValue(input);
-                    itemProp.SetValue(itemDb, value);
-                }
-            }
-
-            return itemDb;
-        }
     }
 }

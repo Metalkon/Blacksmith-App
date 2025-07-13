@@ -12,12 +12,12 @@ namespace Blacksmith.WebApi.Controllers.Items
     public class InventoryController : ControllerBase
     {
         private readonly DbContextSqlServer _db;
-        private readonly ItemManager _itemManager;
+        private readonly ItemHelper _itemHelper;
 
-        public InventoryController(DbContextSqlServer context, ItemManager itemManager)
+        public InventoryController(DbContextSqlServer context, ItemHelper itemHelper)
         {
             _db = context;
-            _itemManager = itemManager;
+            _itemHelper = itemHelper;
         }
 
     }
