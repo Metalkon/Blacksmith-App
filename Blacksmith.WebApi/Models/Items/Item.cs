@@ -16,14 +16,19 @@ namespace Blacksmith.WebApi.Models.Items
         // Crafting Properties
         public List<MaterialQuantity> Recipe { get; set; }
         public bool Tradable { get; set; }
-        public int BaseDurability { get; set; }
-        public int BasePrice { get; set; }
-        public int BaseScore { get; set; }
-        public double BaseAttackPower { get; set; }
-        public double BaseAttackSpeed { get; set; }
-        public double BaseMagicPower { get; set; }
-        public double BaseProtectionPhysical { get; set; }
-        public double BaseProtectionMagic { get; set; }
+        public double AttackPower { get; set; }
+        public double AttackSpeed { get; set; }
+        public double MagicPower { get; set; }
+        public double ProtectionPhysical { get; set; }
+        public double ProtectionMagic { get; set; }
+
+        // Crafted Properties
+        public string CraftId { get; set; }
+        public string Prefix { get; set; }
+        public string Suffix { get; set; }
+        public int Score { get; set; }
+        public int Durability { get; set; }
+        public int Price { get; set; }
 
         public Item()
         {
@@ -38,13 +43,17 @@ namespace Blacksmith.WebApi.Models.Items
             // Crafting Properties
             Recipe = new List<MaterialQuantity>();
             Tradable = true;
-            BaseDurability = 1;
-            BaseScore = 0;
-            BaseAttackPower = 0;
-            BaseAttackSpeed = 0;
-            BaseMagicPower = 0;
-            BaseProtectionPhysical = 0;
-            BaseProtectionMagic = 0;
+            Durability = 1;
+            Score = 0;
+            AttackPower = 0;
+            AttackSpeed = 0;
+            MagicPower = 0;
+            ProtectionPhysical = 0;
+            ProtectionMagic = 0;
+
+            CraftId = string.Empty;
+            Prefix = string.Empty;
+            Suffix = string.Empty;
         }        
     }
 }

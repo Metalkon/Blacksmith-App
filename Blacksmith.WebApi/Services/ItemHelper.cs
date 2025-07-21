@@ -1,6 +1,8 @@
 ﻿using Blacksmith.WebApi.Data;
 using Blacksmith.WebApi.Models.Items;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Shared_Classes.Models;
 
 public class ItemHelper
@@ -29,11 +31,11 @@ public class ItemHelper
             Tradable = item.Tradable,
 
             // Stat Properties
-            AttackPower = Math.Round(item.BaseAttackPower + (item.BaseAttackPower * ((double)userItem.Score * 0.01) / 4), 2),
-            AttackSpeed = item.BaseAttackSpeed,
-            MagicPower = Math.Round(item.BaseMagicPower + (item.BaseMagicPower * ((double)userItem.Score * 0.01) / 4), 2),
-            ProtectionPhysical = Math.Round(item.BaseProtectionPhysical + (item.BaseProtectionPhysical * ((double)userItem.Score * 0.01) / 4), 2),
-            ProtectionMagic = Math.Round(item.BaseProtectionMagic + (item.BaseProtectionMagic * ((double)userItem.Score * 0.01) / 4), 2),
+            AttackPower = Math.Round(item.AttackPower + (item.AttackPower * ((double)userItem.Score * 0.01) / 4), 2),
+            AttackSpeed = item.AttackSpeed,
+            MagicPower = Math.Round(item.MagicPower + (item.MagicPower * ((double)userItem.Score * 0.01) / 4), 2),
+            ProtectionPhysical = Math.Round(item.ProtectionPhysical + (item.ProtectionPhysical * ((double)userItem.Score * 0.01) / 4), 2),
+            ProtectionMagic = Math.Round(item.ProtectionMagic + (item.ProtectionMagic * ((double)userItem.Score * 0.01) / 4), 2),
 
             // Craft Properties
             CraftId = userItem.CraftId,
@@ -130,4 +132,25 @@ public class ItemHelper
 
         return itemDb;
     }
+
+    public ItemDTO MapItemDTO(Item input)
+    {
+        return input.Adapt<ItemDTO>();
+    }
+
+    public Item MapItem(ItemDTO input)
+    {
+        return input.Adapt<Item>();
+    }
+
+    public MaterialDTO MapMaterialDTO(Material input)
+    {
+        return input.Adapt<MaterialDTO>();
+    }
+
+    public Material MapMaterial(MaterialDTO input)
+    {
+        return input.Adapt<Material>();
+    }
+
 }

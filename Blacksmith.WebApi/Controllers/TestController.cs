@@ -57,5 +57,18 @@ namespace Blacksmith.WebApi.Controllers
             return Ok(test2);
         }
 
+        [HttpGet("ReturnItemHelper2")]
+        public async Task<ActionResult<MaterialDTO>> ReturnItem()
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            Material test = new Material();
+            test.Name = "Test 1234";
+
+            var test2 = _itemHelper.MapMaterialDTO(test);
+
+            return Ok(test2);
+        }
+
     }
 }

@@ -127,7 +127,7 @@
         var result = await response.Content.ReadFromJsonAsync<ItemManagerResponseDTO>();
         if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
         {
-            items = result.Data;
+            //items = result.Data;
             pagination.LastItemId = result.LastItemId;
             pageState = "Active";
         }
