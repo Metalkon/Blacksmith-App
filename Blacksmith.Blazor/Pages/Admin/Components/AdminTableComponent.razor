@@ -1,0 +1,186 @@
+﻿@inject HttpClientTokenService client
+@using Shared_Classes.Models
+
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Rarity</th>
+                <th>Tier</th>
+                <th>Tradable</th>
+                <th style="width: 1%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td style="width: 1%;">
+                        @if (!string.IsNullOrEmpty(item.Image))
+                        {
+                            <img src="@item.Image">
+                        }
+                        else
+                        {
+                            <img src="~/image/icon/question_mark.jpg" alt="Question Mark" />
+                        }
+                    </td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Id</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Name</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Rarity</td>
+                    <td style="width: 20%; vertical-align: middle;">@item.Tier</td>
+                    <td style="width: 20%; vertical-align: middle;">
+                        @{ string tradableStatus = item.Tradable ? "Yes" : "No"; }
+                        @tradableStatus
+                    </td>
+                    <td style="width: 1%; vertical-align: middle;">
+                        <div class="text-center d-inline-flex">
+                            <!-- Edit/Delete Buttons -->
+                            <button class="btn btn-primary rounded" style="margin-right: 5px" @onclick="@( () => EditItem(item) )">Edit</button>
+                            <button class="btn btn-danger rounded" @onclick="@( () => DeleteItem(item.Id) )">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (pageState != "Loading")
+{
+    <!-- Pagination Buttons (Previous/Next) -->
+    <div style="display: flex; justify-content: center; align-items: center;">
+        @if (pagination.PageNumber > 1)
+        {
+            <a class="page-link" @onclick="PreviousPage">Previous</a>
+        }
+        else
+        {
+            <a class="page-link">Previous</a>
+        }
+        <a class="page-link">@pagination.PageNumber</a>
+        @if (items.Count < 5)
+        {
+            <a class="page-link">Next</a>
+        }
+        else
+        {
+            <a class="page-link" @onclick="NextPage">Next</a>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public ItemDTO SelectedItem { get; set; }
+
+    [Parameter]
+    public List<ItemDTO> SearchedItems { get; set; }
+
+
+    [Parameter]
+    public EventCallback<string> ChangeState { get; set; }
+
+    [Parameter]
+    public EventCallback<ItemEditDTO> TransferItem { get; set; }
+
+    public string message;
+    public string pageState;
+    public List<ItemEditDTO> items = new List<ItemEditDTO>();
+    public PaginationDTO pagination = new PaginationDTO() { PageNumber = 1, PageSize = 5, LastItemId = 0, SearchQuery = "" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        pageState = "Loading";
+        await ItemSearch();
+    }
+
+    // Input Search Query
+    private async Task NameSearch()
+    {
+        pagination.PageNumber = 1;
+        pagination.LastItemId = 0;
+        await ItemSearch();
+    }
+
+    // Item Table Search
+    public async Task ItemSearch()
+    {
+        var response = await client.GetAsync($"https://localhost:8000/api/AdminItem?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}&searchQuery={pagination.SearchQuery}&lastItemId={pagination.LastItemId}");
+        var result = await response.Content.ReadFromJsonAsync<ItemManagerResponseDTO>();
+        if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
+        {
+            //items = result.Data;
+            pagination.LastItemId = result.LastItemId;
+            pageState = "Active";
+        }
+        else
+        {
+            pageState = "Error";
+            message = "The requested table or it's contents returned as null/empty.";
+        }        
+    }
+
+    // Edit Item
+    private async Task EditItem(ItemEditDTO editItem)
+    {
+        await TransferItem.InvokeAsync(editItem);
+        await ChangeState.InvokeAsync("Edit");
+    }
+
+    // Create Item
+    private async Task CreateItem()
+    {
+        ItemEditDTO newItem = new ItemEditDTO()
+        {
+            Name = "",
+            Rarity = ItemRarity.Common,
+            Tier = 0,
+            Weight = 0.0,
+            Description = "",
+            Image = "./images/Icon/question_mark.jpg",
+            Recipe = new List<MaterialQuantity>(),
+            Tradable = false,
+            BaseDurability = 0,
+            BasePrice = 0,
+            BaseScore = 0,
+            BaseAttackPower = 0,
+            BaseAttackSpeed = 0,
+            BaseMagicPower = 0,
+            BaseProtectionPhysical = 0,
+            BaseProtectionMagic = 0
+        };
+        await TransferItem.InvokeAsync(newItem);
+        await ChangeState.InvokeAsync("Create");
+    }
+
+    // Delete Item
+    private async Task DeleteItem(int id)
+    {
+        await client.DeleteAsync($"https://localhost:8000/api/AdminItem/{id}");
+        await ItemSearch();
+    }
+
+    // Pagination (Previous)
+    private async Task PreviousPage()
+    {
+        pagination.PageNumber--;
+        await ItemSearch();
+    }
+
+    // Pagination (Next)
+    private async Task NextPage()
+    {
+        pagination.PageNumber++;
+        await ItemSearch();
+    }
+
+    private async Task Return()
+    {
+        pageState = "Active";
+        pagination.SearchQuery = string.Empty;
+        await ItemSearch();
+    }
+}

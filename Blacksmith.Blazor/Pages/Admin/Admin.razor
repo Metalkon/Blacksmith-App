@@ -6,6 +6,7 @@
 <PageTitle>Admin</PageTitle>
 
 <button @onclick="NavigateToItemManager">Item Manager</button>
+<button @onclick="NavigateToMaterialManager">Material Manager</button>
 <button @onclick="NavigateToUserManager">User Manager</button>
 
 @code {
@@ -17,5 +18,10 @@
     private void NavigateToUserManager()
     {
         navigationManager.NavigateTo("/admin/usermanager");
+    }
+
+    private void NavigateToMaterialManager()
+    {
+        navigationManager.NavigateTo("/admin/materialmanager");
     }
 }

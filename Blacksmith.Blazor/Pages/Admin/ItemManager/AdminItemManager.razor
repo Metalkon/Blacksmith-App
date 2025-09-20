@@ -1,9 +1,13 @@
 ﻿@page "/admin/itemmanager"
 @using Blacksmith.Blazor.Pages.Admin.ItemManager.Components;
+@using Blacksmith.Blazor.Pages.Admin.Components;
 
+<h5>Outdated Admin Pages (New Controllers, Old Pages), Use Swagger For Now</h5>
+
+<!--
 @if (pageState == "Table")
 {
-    <AdminItemManagerTableComponent TransferItem="TransferItem" ChangeState="ChangeState"></AdminItemManagerTableComponent>
+    <AdminTableComponent SelectedItem=@selectedItem TransferItem="TransferItem" ChangeState="ChangeState"></AdminTableComponent>
 }
 @if (pageState == "Create")
 {
@@ -17,8 +21,15 @@
 {
     <AdminItemManagerDisplayItem></AdminItemManagerDisplayItem>
 }
+-->
 
 @code {
+    public ItemDTO selectedItem { get; set; }
+    public List<ItemDTO> searchedItems { get; set; }
+
+
+
+
     public string message;
     public string pageState;
     public ItemEditDTO item;
