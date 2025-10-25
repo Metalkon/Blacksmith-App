@@ -84,11 +84,11 @@
     public EventCallback<string> ChangeState { get; set; }
 
     [Parameter]
-    public EventCallback<ItemEditDTO> TransferItem { get; set; }
+    public EventCallback<ItemDTO> TransferItem { get; set; }
 
     public string message;
     public string pageState;
-    public List<ItemEditDTO> items = new List<ItemEditDTO>();
+    public List<ItemDTO> items = new List<ItemDTO>();
     public PaginationDTO pagination = new PaginationDTO() { PageNumber = 1, PageSize = 5, LastItemId = 0, SearchQuery = "" };
 
     protected override async Task OnInitializedAsync()
@@ -124,7 +124,7 @@
     }
 
     // Edit Item
-    private async Task EditItem(ItemEditDTO editItem)
+    private async Task EditItem(ItemDTO editItem)
     {
         await TransferItem.InvokeAsync(editItem);
         await ChangeState.InvokeAsync("Edit");
@@ -133,7 +133,7 @@
     // Create Item
     private async Task CreateItem()
     {
-        ItemEditDTO newItem = new ItemEditDTO()
+        ItemDTO newItem = new ItemDTO()
         {
             Name = "",
             Rarity = ItemRarity.Common,
@@ -143,14 +143,14 @@
             Image = "./images/Icon/question_mark.jpg",
             Recipe = new List<MaterialQuantity>(),
             Tradable = false,
-            BaseDurability = 0,
-            BasePrice = 0,
-            BaseScore = 0,
-            BaseAttackPower = 0,
-            BaseAttackSpeed = 0,
-            BaseMagicPower = 0,
-            BaseProtectionPhysical = 0,
-            BaseProtectionMagic = 0
+            Durability = 0,
+            Price = 0,
+            Score = 0,
+            AttackPower = 0,
+            AttackSpeed = 0,
+            MagicPower = 0,
+            ProtectionPhysical = 0,
+            ProtectionMagic = 0
         };
         await TransferItem.InvokeAsync(newItem);
         await ChangeState.InvokeAsync("Create");

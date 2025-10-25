@@ -7,10 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 using System.Text.RegularExpressions;
 
-// --------------------------
-// This is an outdated Item Controller from the old prototype project, it's been modified slightly but it will need to be overhauled.
-// --------------------------
-
 namespace Blacksmith.WebApi.Controllers
 {
 
@@ -152,8 +148,5 @@ namespace Blacksmith.WebApi.Controllers
 
             return Ok(itemDto);
         }
-
-
-
     }
 }

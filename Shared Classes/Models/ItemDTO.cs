@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 
 namespace Shared_Classes.Models
 {
@@ -30,5 +29,31 @@ namespace Shared_Classes.Models
         public int Score { get; set; }
         public int Durability { get; set; }
         public int Price { get; set; }
+
+        public ItemDTO()
+        {
+            // Display Properties
+            Name = $"N/A";
+            Rarity = ItemRarity.Common;
+            Tier = 0;
+            Weight = 0;
+            Description = "N/A";
+            Image = $"./images/Icon/question_mark.jpg";
+
+            // Crafting Properties
+            Recipe = new List<MaterialQuantity>();
+            Tradable = true;
+            Durability = 1;
+            Score = 0;
+            AttackPower = 0;
+            AttackSpeed = 0;
+            MagicPower = 0;
+            ProtectionPhysical = 0;
+            ProtectionMagic = 0;
+
+            CraftId = string.Empty;
+            Prefix = string.Empty;
+            Suffix = string.Empty;
+        }
     }
 }

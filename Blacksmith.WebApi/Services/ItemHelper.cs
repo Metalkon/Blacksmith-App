@@ -72,32 +72,11 @@ public class ItemHelper
         return itemDTO;
     }
 
-    public async Task<ItemEditDTO> MapItemToEditDTO(Item input)
-    {
-        ItemEditDTO itemDTO = new ItemEditDTO();
-
-        var inputProperties = typeof(Item).GetProperties();
-        var itemDTOProperties = typeof(ItemEditDTO).GetProperties();
-
-        foreach (var inputProp in inputProperties)
-        {
-            var itemDTOProp = itemDTOProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
-
-            if (itemDTOProp != null && itemDTOProp.CanWrite)
-            {
-                var value = inputProp.GetValue(input);
-                itemDTOProp.SetValue(itemDTO, value);
-            }
-        }
-
-        return itemDTO;
-    }
-
-    public async Task<Item> MapDTOToItem(ItemEditDTO input)
+    public async Task<Item> MapDTOToItem(ItemDTO input)
     {
         Item item = new Item();
 
-        var inputProperties = typeof(ItemEditDTO).GetProperties();
+        var inputProperties = typeof(ItemDTO).GetProperties();
         var itemProperties = typeof(Item).GetProperties();
 
         foreach (var inputProp in inputProperties)
@@ -112,25 +91,6 @@ public class ItemHelper
         }
 
         return item;
-    }
-
-    public async Task<Item> MapDTOToItem(ItemEditDTO input, Item itemDb)
-    {
-        var inputProperties = typeof(ItemEditDTO).GetProperties();
-        var itemProperties = typeof(Item).GetProperties();
-
-        foreach (var inputProp in inputProperties)
-        {
-            var itemProp = itemProperties.FirstOrDefault(p => p.Name == inputProp.Name && p.PropertyType == inputProp.PropertyType);
-
-            if (itemProp != null && itemProp.CanWrite)
-            {
-                var value = inputProp.GetValue(input);
-                itemProp.SetValue(itemDb, value);
-            }
-        }
-
-        return itemDb;
     }
 
     public ItemDTO MapItemDTO(Item input)

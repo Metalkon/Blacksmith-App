@@ -1,152 +1,126 @@
 ﻿@inject HttpClientTokenService client
 
-@if (pageState == "Loading")
-{
-    <LoadingComponent Message="Item Manager"></LoadingComponent>
-}
-@if (pageState == "Error")
-{
-    <ErrorComponent Message="@message"></ErrorComponent>
-}
-@if (pageState == "Active")
-{
-    <main class="d-flex justify-content-center align-items-center h-75">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-sm-10 col-md-8 col-lg-6">
-                    <div class="card">
-                        <div class="card-body m-sm-4">
-                            <b><h3>Create Item</h3></b>
+<main class="d-flex justify-content-center align-items-center h-75">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-10 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body m-sm-4">
+                        <b><h3>Edit Item</h3></b>
 
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Id</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Id" @bind-value="EditItem.Id" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Name</label>
-                                <input class="form-control form-control-sm" type="text" placeholder="Name" @bind-value="EditItem.Name" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Rarity</label>
-                                <select class="form-control form-control-sm" @bind="EditItem.Rarity">
-                                    <option value="ItemEditDTO.ItemRarity.Common">Common</option>
-                                    <option value="ItemEditDTO.ItemRarity.Uncommon">Uncommon</option>
-                                    <option value="ItemEditDTO.ItemRarity.Rare">Rare</option>
-                                    <option value="ItemEditDTO.ItemRarity.Epic">Epic</option>
-                                    <option value="ItemEditDTO.ItemRarity.Legendary">Legendary</option>
-                                </select>
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Tier</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Tier" @bind-value="EditItem.Tier" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Weight</label>
-                                <input class="form-control form-control-sm" type="number" step="0.01" placeholder="Weight" @bind-value="EditItem.Weight" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Description</label>
-                                <textarea class="form-control form-control-sm" placeholder="Description" @bind="EditItem.Description"></textarea>
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Image</label>
-                                <input class="form-control form-control-sm" type="text" placeholder="Image" @bind-value="EditItem.Image" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Tradable</label>
-                                <select class="form-control form-control-sm" @bind="EditItem.Tradable">
-                                    <option value="true">True</option>
-                                    <option value="false">False</option>
-                                </select>
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Durability</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Durability" @bind-value="EditItem.BaseDurability" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Price</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Price" @bind-value="EditItem.BasePrice" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Score</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Score" @bind-value="EditItem.BaseScore" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Attack Power</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Attack Power" @bind-value="EditItem.BaseAttackPower" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Attack Speed</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Attack Speed" @bind-value="EditItem.BaseAttackSpeed" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Magic Power</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Magic Power" @bind-value="EditItem.BaseMagicPower" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Protection Physical</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Protection Physical" @bind-value="EditItem.BaseProtectionPhysical" />
-                            </div>
-                            <div class="mb-1">
-                                <label class="form-label fs-6">Base Protection Magic</label>
-                                <input class="form-control form-control-sm" type="number" placeholder="Base Protection Magic" @bind-value="EditItem.BaseProtectionMagic" />
-                            </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Id</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Id" @bind-value="Item.Id" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Name</label>
+                            <input class="form-control form-control-sm" type="text" placeholder="Name" @bind-value="Item.Name" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Rarity</label>
+                            <select class="form-control form-control-sm" @bind="Item.Rarity">
+                                <option value="ItemRarity.ItemRarity.Common">Common</option>
+                                <option value="ItemRarity.ItemRarity.Uncommon">Uncommon</option>
+                                <option value="ItemRarity.ItemRarity.Rare">Rare</option>
+                                <option value="ItemRarity.ItemRarity.Epic">Epic</option>
+                                <option value="ItemRarity.ItemRarity.Legendary">Legendary</option>
+                            </select>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Tier</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Tier" @bind-value="Item.Tier" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Weight</label>
+                            <input class="form-control form-control-sm" type="number" step="0.01" placeholder="Weight" @bind-value="Item.Weight" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Description</label>
+                            <textarea class="form-control form-control-sm" placeholder="Description" @bind="Item.Description"></textarea>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Image</label>
+                            <input class="form-control form-control-sm" type="text" placeholder="Image" @bind-value="Item.Image" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Tradable</label>
+                            <select class="form-control form-control-sm" @bind="Item.Tradable">
+                                <option value="true">True</option>
+                                <option value="false">False</option>
+                            </select>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Durability</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Durability" @bind-value="Item.Durability" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Price</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Price" @bind-value="Item.Price" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Score</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Score" @bind-value="Item.Score" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Attack Power</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Attack Power" @bind-value="Item.AttackPower" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Attack Speed</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Attack Speed" @bind-value="Item.AttackSpeed" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Magic Power</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Magic Power" @bind-value="Item.MagicPower" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Protection Physical</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Protection Physical" @bind-value="Item.ProtectionPhysical" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label fs-6">Base Protection Magic</label>
+                            <input class="form-control form-control-sm" type="number" placeholder="Base Protection Magic" @bind-value="Item.ProtectionMagic" />
+                        </div>
 
-                            <div class="text-center mt-3">
-                                <button type="button" class="btn btn-primary" @onclick="EditItemSave">Submit</button>
-                                <button type="button" class="btn btn-primary" @onclick="ReturnToTable">Return</button>
-                            </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" @onclick="EditItemSave">Submit</button>
+                            <button type="button" class="btn btn-primary" @onclick="ReturnToTable">Return</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
-}
+    </div>
+</main>
 
 @code {
     [Parameter]
-    public ItemEditDTO EditItem { get; set; }
-
+    public EventCallback<ItemDTO> UpdateItem { get; set; }
     [Parameter]
     public EventCallback ItemSearch { get; set; }
-
     [Parameter]
     public EventCallback<string> ChangeState { get; set; }
+    [Parameter]
+    public EventCallback EditItem { get; set; }
+    [Parameter]
+    public ItemDTO Item { get; set; }
 
     public string message;
-    public string pageState;
 
     protected override async Task OnInitializedAsync()
     {
-        pageState = "Active";
+        Console.WriteLine($"EditItem: {JsonSerializer.Serialize(Item)}");
     }
 
-    // Save Edited Item
     private async Task EditItemSave()
     {
-        /*if (EditItem.ItemId == null || EditItem.Price == null || EditItem.Tradable == null || EditItem.Quantity == null
-        || string.IsNullOrEmpty(EditItem.Name) || string.IsNullOrEmpty(EditItem.Type) || string.IsNullOrEmpty(EditItem.Image))
-        {
-            return;
-        }*/
-
-        var response = await client.PutAsync<string, ItemEditDTO>("https://localhost:8000/api/AdminItem", EditItem);
-        if (response.IsSuccessStatusCode)
-        {
-            pageState = "Active";
-            await ReturnToTable();
-        }
-        else
-        {
-            pageState = "Error";
-            message = "There was an issue with editing the item";
-        }        
+        Console.WriteLine($"EditItemButton: {JsonSerializer.Serialize(Item)}");
+        await EditItem.InvokeAsync();
+        await ChangeState.InvokeAsync("Table");
     }
 
     private async Task ReturnToTable()
     {
-        await ItemSearch.InvokeAsync();
         await ChangeState.InvokeAsync("Table");
     }
 }

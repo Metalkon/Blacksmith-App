@@ -1,60 +1,129 @@
 ﻿@page "/admin/itemmanager"
 @using Blacksmith.Blazor.Pages.Admin.ItemManager.Components;
 @using Blacksmith.Blazor.Pages.Admin.Components;
+@inject HttpClientTokenService client
 
-<h5>Outdated Admin Pages (New Controllers, Old Pages), Use Swagger For Now</h5>
-
-<!--
 @if (pageState == "Table")
 {
-    <AdminTableComponent SelectedItem=@selectedItem TransferItem="TransferItem" ChangeState="ChangeState"></AdminTableComponent>
+    <AdminItemManagerTableComponent ItemList="@itemList" Item="@item" Pagination="@pagination" ItemSearch="ItemSearch" NameSearch="NameSearch" ChangeState="ChangeState" UpdateItem="UpdateItem"></AdminItemManagerTableComponent>
 }
 @if (pageState == "Create")
 {
-    <AdminItemManagerCreateComponent CreateItem="@item" ChangeState="ChangeState" ItemSearch="ActivateItemSearch"></AdminItemManagerCreateComponent>
+    <AdminItemManagerCreateComponent Item="@item" CreateItem="CreateItem" ChangeState="ChangeState" ItemSearch="ItemSearch"></AdminItemManagerCreateComponent>
 }
 @if (pageState == "Edit")
 {
-    <AdminItemManagerEditComponent EditItem=@item ChangeState="ChangeState" ItemSearch="ActivateItemSearch"></AdminItemManagerEditComponent>
+    <AdminItemManagerEditComponent Item=@item EditItem="EditItem" ChangeState="ChangeState" ItemSearch="ItemSearch"></AdminItemManagerEditComponent>
 }
-@if (pageState == "DisplayItem")
+@if (pageState == "Loading")
 {
-    <AdminItemManagerDisplayItem></AdminItemManagerDisplayItem>
+    <LoadingComponent Message="Item Manager"></LoadingComponent>
 }
--->
+@if (pageState == "Error")
+{
+    <ErrorComponent Message="@message"></ErrorComponent>
+}
 
 @code {
-    public ItemDTO selectedItem { get; set; }
-    public List<ItemDTO> searchedItems { get; set; }
-
-
-
+    public ItemDTO item { get; set; } = new ItemDTO();
+    public List<ItemDTO> itemList { get; set; } = new List<ItemDTO>();
+    public PaginationDTO pagination = new PaginationDTO() { PageNumber = 1, PageSize = 10, LastItemId = 0, SearchQuery = "" };
 
     public string message;
     public string pageState;
-    public ItemEditDTO item;
     private AdminItemManagerTableComponent ItemManager;
 
     protected override async Task OnInitializedAsync()
     {
+        pageState = "Loading";
+        await ItemSearch();
         pageState = "Table";
-    }
-
-    public void TransferItem(ItemEditDTO value)
-    {
-        item = value;
     }
 
     public void ChangeState(string value)
     {
         pageState = value;
+        StateHasChanged();
     }
 
-    public async Task ActivateItemSearch()
+    // Item Table Search
+    public async Task ItemSearch()
     {
-        if (ItemManager != null)
+        var response = await client.GetAsync($"https://localhost:8000/api/AdminItem?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}&searchQuery={pagination.SearchQuery}&lastItemId={pagination.LastItemId}");
+        var result = await response.Content.ReadFromJsonAsync<ItemManagerResponseDTO>();
+        if (result != null && result.Data.Count >= 1 && result.LastItemId != null)
         {
-            await ItemManager.ItemSearch();
+            itemList = result.Data;
+            pagination.LastItemId = result.LastItemId;
+            pageState = "Active";
         }
+        else
+        {
+            pageState = "Error";
+            message = "The requested table or it's contents returned as null/empty.";
+        }
+        StateHasChanged();
+    }
+
+    // Save Edited Item
+    private async Task CreateItem()
+    {
+        Console.WriteLine($"CreateItemMethod: {JsonSerializer.Serialize(item)}");
+        var response = await client.PostAsync<string, ItemDTO>("https://localhost:8000/api/AdminItem/Create", item);
+        if (response.IsSuccessStatusCode)
+        {
+            await ItemSearch();
+            pageState = "Table";
+        }
+        else
+        {
+            pageState = "Error";
+            message = "There was an issue with creating the item";
+        }
+    }
+
+    // Save Edited Item
+    private async Task EditItem()
+    {
+        Console.WriteLine($"EditItemMethod: {JsonSerializer.Serialize(item)}");
+        var response = await client.PutAsync<string, ItemDTO>($"https://localhost:8000/api/AdminItem/Update/{item.Id}", item);
+        if (response.IsSuccessStatusCode)
+        {
+            await ItemSearch();
+            pageState = "Table";
+        }
+        else
+        {
+            pageState = "Error";
+            message = "There was an issue with editing the item";
+        }
+    }
+
+    // Save Edited Item
+    private async Task UpdateItem(ItemDTO input)
+    {
+        item = input;
+    }
+
+    // Input Search Query
+    private async Task NameSearch()
+    {
+        pagination.PageNumber = 1;
+        pagination.LastItemId = 0;
+        await ItemSearch();
+    }
+
+    // Pagination (Previous)
+    private async Task PreviousPage()
+    {
+        pagination.PageNumber--;
+        await ItemSearch();
+    }
+
+    // Pagination (Next)
+    private async Task NextPage()
+    {
+        pagination.PageNumber++;
+        await ItemSearch();
     }
 }
