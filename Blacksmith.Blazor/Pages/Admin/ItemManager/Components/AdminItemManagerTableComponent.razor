@@ -53,7 +53,7 @@
                     <div class="text-center d-inline-flex">
                         <!-- Edit/Delete Buttons -->
                         <button class="btn btn-primary rounded" style="margin-right: 5px" @onclick="@(() => EditItem(item))">Edit</button>
-                        <button class="btn btn-danger rounded" @onclick="@(() => DeleteItem(item.Id))">Delete</button>
+                        <button class="btn btn-danger rounded" @onclick="@(() => DeleteItemButton(item.Id))">Delete</button>
                     </div>
                 </td>
             </tr>
@@ -86,6 +86,8 @@
 @code {
     [Parameter]
     public EventCallback<ItemDTO> UpdateItem { get; set; }
+    [Parameter]
+    public EventCallback<int> DeleteItem { get; set; }
     [Parameter]
     public EventCallback ItemSearch { get; set; }
     [Parameter]
@@ -127,11 +129,9 @@
     }
 
     // Delete Item
-    private async Task DeleteItem(int id)
+    private async Task DeleteItemButton(int id)
     {
-        //await client.DeleteAsync($"https://localhost:8000/api/AdminItem/{id}");         
-        // Replace with simply clearing an item, not deleting, and move to parent
-        await ItemSearch.InvokeAsync();
+        DeleteItem.InvokeAsync(id);
     }
 
     // Pagination (Previous)

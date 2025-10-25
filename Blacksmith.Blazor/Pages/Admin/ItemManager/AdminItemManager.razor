@@ -5,7 +5,7 @@
 
 @if (pageState == "Table")
 {
-    <AdminItemManagerTableComponent ItemList="@itemList" Item="@item" Pagination="@pagination" ItemSearch="ItemSearch" NameSearch="NameSearch" ChangeState="ChangeState" UpdateItem="UpdateItem"></AdminItemManagerTableComponent>
+    <AdminItemManagerTableComponent ItemList="@itemList" Item="@item" Pagination="@pagination" ItemSearch="ItemSearch" NameSearch="NameSearch" ChangeState="ChangeState" UpdateItem="UpdateItem" DeleteItem="DeleteItem"></AdminItemManagerTableComponent>
 }
 @if (pageState == "Create")
 {
@@ -85,7 +85,6 @@
     // Save Edited Item
     private async Task EditItem()
     {
-        Console.WriteLine($"EditItemMethod: {JsonSerializer.Serialize(item)}");
         var response = await client.PutAsync<string, ItemDTO>($"https://localhost:8000/api/AdminItem/Update/{item.Id}", item);
         if (response.IsSuccessStatusCode)
         {
@@ -97,6 +96,14 @@
             pageState = "Error";
             message = "There was an issue with editing the item";
         }
+    }
+
+    // Delete an item
+    private async Task DeleteItem(int id)
+    {
+        var response = await client.PutAsync<string, ItemDTO>($"https://localhost:8000/api/AdminItem/Update/{id}", new ItemDTO() { Id = id});
+        //await client.DeleteAsync($"https://localhost:8000/api/AdminItem/{id}");
+        await ItemSearch();
     }
 
     // Save Edited Item
