@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailAuth.Blazor", "Blacksmith.Blazor\EmailAuth.Blazor.csproj", "{0E55304B-1019-491B-8C1D-4B7F93F507D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailAuth.Blazor", "EmailAuth.Blazor\EmailAuth.Blazor.csproj", "{0E55304B-1019-491B-8C1D-4B7F93F507D5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailAuth.WebApi", "Blacksmith.WebApi\EmailAuth.WebApi.csproj", "{82DE222A-5AE2-4518-BC0B-2BAEF248F0BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailAuth.WebApi", "EmailAuth.WebApi\EmailAuth.WebApi.csproj", "{82DE222A-5AE2-4518-BC0B-2BAEF248F0BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared Classes", "Shared Classes\Shared Classes.csproj", "{6EB3C17C-5D50-44A6-A258-52A84138D58A}"
 EndProject
