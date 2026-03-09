@@ -1,8 +1,8 @@
-﻿using Blacksmith.WebApi.Models;
-using Blacksmith.WebApi.Models.Items;
+﻿using EmailAuth.WebApi.Models;
+using EmailAuth.WebApi.Models.Items;
 using Microsoft.EntityFrameworkCore;
 
-namespace Blacksmith.WebApi.Data
+namespace EmailAuth.WebApi.Data
 {
     public class DbContextSqlite : DbContext
     {

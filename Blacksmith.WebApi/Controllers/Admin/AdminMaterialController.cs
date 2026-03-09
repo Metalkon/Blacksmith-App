@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Blacksmith.WebApi.Data;
+using EmailAuth.WebApi.Data;
 using Shared_Classes.Models;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
-using Blacksmith.WebApi.Models.Items;
+using EmailAuth.WebApi.Models.Items;
 using Mapster;
 
 // --------------------------
 // This is an outdated Item Controller from the old prototype project, it's been modified slightly but it will need to be overhauled.
 // --------------------------
 
-namespace Blacksmith.WebApi.Controllers
+namespace EmailAuth.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

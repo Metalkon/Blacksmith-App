@@ -1,11 +1,11 @@
-using Blacksmith.WebApi.Data;
+using EmailAuth.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Blacksmith.WebApi.Services;
+using EmailAuth.WebApi.Services;
 
-namespace Blacksmith.WebApi
+namespace EmailAuth.WebApi
 {
     public class Program
     {

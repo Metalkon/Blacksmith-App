@@ -1,11 +1,11 @@
-﻿using Blacksmith.WebApi.Data;
-using Blacksmith.WebApi.Models;
+﻿using EmailAuth.WebApi.Data;
+using EmailAuth.WebApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Blacksmith.WebApi.Services
+namespace EmailAuth.WebApi.Services
 {
     public class TokenService
     {

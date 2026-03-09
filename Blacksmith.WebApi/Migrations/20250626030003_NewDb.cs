@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Blacksmith.WebApi.Migrations
+namespace EmailAuth.WebApi.Migrations
 {
     /// <inheritdoc />
     public partial class NewDb : Migration

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Blacksmith.WebApi.Models
+namespace EmailAuth.WebApi.Models
 {
     public class RefreshToken
     {

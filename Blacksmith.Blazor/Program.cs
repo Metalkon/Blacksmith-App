@@ -2,9 +2,9 @@ global using Microsoft.AspNetCore.Components.Authorization;
 global using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Blacksmith.Blazor.Services;
+using EmailAuth.Blazor.Services;
 
-namespace Blacksmith.Blazor
+namespace EmailAuth.Blazor
 {
     public class Program
     {

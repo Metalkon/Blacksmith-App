@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace Blacksmith.Blazor.Services
+namespace EmailAuth.Blazor.Services
 
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider

@@ -1,12 +1,12 @@
-﻿using Blacksmith.WebApi.Data;
-using Blacksmith.WebApi.Models;
-using Blacksmith.WebApi.Services;
+﻿using EmailAuth.WebApi.Data;
+using EmailAuth.WebApi.Models;
+using EmailAuth.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
-namespace Blacksmith.WebApi.Controllers.Account
+namespace EmailAuth.WebApi.Controllers.Account
 {
     [Route("api/[controller]")]
     [ApiController]

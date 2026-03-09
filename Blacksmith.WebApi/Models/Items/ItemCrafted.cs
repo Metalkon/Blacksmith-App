@@ -1,4 +1,4 @@
-﻿namespace Blacksmith.WebApi.Models.Items
+﻿namespace EmailAuth.WebApi.Models.Items
 {
     public class ItemCrafted
     {

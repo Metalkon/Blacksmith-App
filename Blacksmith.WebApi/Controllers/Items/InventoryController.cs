@@ -1,9 +1,9 @@
-﻿using Blacksmith.WebApi.Data;
+﻿using EmailAuth.WebApi.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Blacksmith.WebApi.Controllers.Items
+namespace EmailAuth.WebApi.Controllers.Items
 {
 
     [Route("api/[controller]")]

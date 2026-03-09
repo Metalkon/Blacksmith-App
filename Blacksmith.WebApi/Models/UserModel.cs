@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Blacksmith.WebApi.Models
+namespace EmailAuth.WebApi.Models
 {
     public class UserModel
     {

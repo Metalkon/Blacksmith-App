@@ -1,5 +1,5 @@
-﻿using Blacksmith.WebApi.Data;
-using Blacksmith.WebApi.Models.Items;
+﻿using EmailAuth.WebApi.Data;
+using EmailAuth.WebApi.Models.Items;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;

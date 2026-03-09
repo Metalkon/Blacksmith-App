@@ -1,8 +1,8 @@
-﻿using Blacksmith.WebApi.Models;
+﻿using EmailAuth.WebApi.Models;
 using Microsoft.AspNetCore.Identity.Data;
 using Shared_Classes.Models;
 
-namespace Blacksmith.WebApi.Services
+namespace EmailAuth.WebApi.Services
 {
     public class AuthService
     {
@@ -133,8 +133,8 @@ namespace Blacksmith.WebApi.Services
         // Send login code to the user's email
         public async Task<(int statusCode, string message)> SendEmailLogin(UserModel user)
         {
-            var subject = "Blacksmith App - Login Verification";
-            var message = $"Welcome to Blacksmith Web App!\n\n" +
+            var subject = "EmailAuth App - Login Verification";
+            var message = $"Welcome to EmailAuth Web App!\n\n" +
                           $"To complete your login, click the link below (valid for 15 minutes):\n" +
                           $"https://localhost:8001/confirmation?confirmType=Login&username={user.Username}&email={user.Email}&code={user.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(user.Email, subject, message);
@@ -148,8 +148,8 @@ namespace Blacksmith.WebApi.Services
         // Send login code to the user's email
         public async Task<(int statusCode, string message)> SendEmailRegister(UserModel user)
         {
-            var subject = "Blacksmith App - Register Verification";
-            var message = $"Welcome to Blacksmith Web App!\n\n" +
+            var subject = "EmailAuth App - Register Verification";
+            var message = $"Welcome to EmailAuth Web App!\n\n" +
                           $"To complete your registration, click the link below (valid for 15 minutes):\n" +
                           $"https://localhost:8001/confirmation?confirmType=Register&username={user.Username}&email={user.Email}&code={user.LoginCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(user.Email, subject, message);
@@ -163,7 +163,7 @@ namespace Blacksmith.WebApi.Services
         // Send locked email to the user's email
         public async Task<(int statusCode, string message)> SendEmailLocked(UserModel user)
         {
-            var subject = "Blacksmith App - Account Has Been Locked";
+            var subject = "EmailAuth App - Account Has Been Locked";
             var message = $"Login with this email has been locked due to too many failed attempts, if you wish to unlock it and attempt again then click the link below (no expiry time while valid):\n" +
                           $"https://localhost:8001/confirmation?confirmType=UnlockEmail&username={user.Username}&email={user.Email}&code={user.LockedCode}";
             bool sentEmail = await _emailSender.SendEmailAsync(user.Email, subject, message);

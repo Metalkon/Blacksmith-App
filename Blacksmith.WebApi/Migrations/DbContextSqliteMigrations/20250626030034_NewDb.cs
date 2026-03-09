@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Blacksmith.WebApi.Migrations.DbContextSqliteMigrations
+namespace EmailAuth.WebApi.Migrations.DbContextSqliteMigrations
 {
     /// <inheritdoc />
     public partial class NewDb : Migration

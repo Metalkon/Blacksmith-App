@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace Blacksmith.WebApi.Services
+namespace EmailAuth.WebApi.Services
 {
     public class EmailSender
     {

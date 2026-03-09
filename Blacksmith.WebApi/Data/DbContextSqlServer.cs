@@ -1,8 +1,8 @@
-﻿using Blacksmith.WebApi.Models;
+﻿using EmailAuth.WebApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
 
-namespace Blacksmith.WebApi.Data
+namespace EmailAuth.WebApi.Data
 {
     public class DbContextSqlServer : DbContext
     {

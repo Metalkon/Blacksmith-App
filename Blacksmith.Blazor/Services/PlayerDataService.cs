@@ -2,7 +2,7 @@
 using Shared_Classes.Models;
 using System.Net.Http.Json;
 
-namespace Blacksmith.Blazor.Services
+namespace EmailAuth.Blazor.Services
 {
     public class PlayerDataService
     {

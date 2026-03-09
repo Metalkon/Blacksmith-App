@@ -1,8 +1,8 @@
-﻿using Blacksmith.WebApi.Models.Items;
+﻿using EmailAuth.WebApi.Models.Items;
 using System.ComponentModel.DataAnnotations;
 using Shared_Classes.Models;
 
-namespace Blacksmith.WebApi.Models
+namespace EmailAuth.WebApi.Models
 {
     public class GameData
     {
