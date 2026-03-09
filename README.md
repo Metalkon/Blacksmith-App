@@ -1,7 +1,7 @@
-# Blacksmith-App
-A portfolio project that I'm working on that utilizes ASP.NET Web API and Blazor WebAssembly (.NET8). 
+# EmailAuthDemo
+A portfolio project that utilizes ASP.NET Web API and Blazor WebAssembly (.NET8). 
 
-The project is still a work in progress but it has a custom passwordless jwt auth system that I put together for users to login and register only using usernames and emails and I will soon start adding in more features and the blacksmith crafting web game itself.
+The project is still a work in progress but it has a custom passwordless jwt auth system that I put together for users to login and register only using usernames and emails.
 
 -----
 
