@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmailAuth.WebApi.Data
 {
-    public class DbContextSqlite : DbContext
+    public class DbContextSqliteItem : DbContext
     {
-        public DbContextSqlite(DbContextOptions<DbContextSqlite> options) : base(options)
+        public DbContextSqliteItem(DbContextOptions<DbContextSqliteItem> options) : base(options)
         {
 
         }

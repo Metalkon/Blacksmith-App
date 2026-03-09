@@ -15,13 +15,13 @@ namespace EmailAuth.WebApi
 
             // Add services to the container.
 
-            builder.Services.AddDbContext<DbContextSqlServer>(options =>
-            {
-                options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnection"]);
-            });
-            builder.Services.AddDbContext<DbContextSqlite>(options =>
+            builder.Services.AddDbContext<DbContextSqliteItem>(options =>
             {
                 options.UseSqlite(builder.Configuration.GetConnectionString("ItemDb"));
+            });
+            builder.Services.AddDbContext<DbContextSqliteUser>(options =>
+            {
+                options.UseSqlite(builder.Configuration.GetConnectionString("UserDb"));
             });
 
             builder.Services.AddCors(opt => opt.AddDefaultPolicy(policy =>

@@ -1,5 +1,5 @@
 ﻿using EmailAuth.WebApi.Data;
-using EmailAuth.WebApi.Models.Items;
+using EmailAuth.WebApi.Models;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +15,10 @@ namespace EmailAuth.WebApi.Controllers
     //[Authorize(Roles = "Admin")]
     public class AdminItemController : ControllerBase
     {
-        private readonly DbContextSqlite _db;
+        private readonly DbContextSqliteItem _db;
         private readonly ItemHelper _itemHelper;
 
-        public AdminItemController(DbContextSqlite context, ItemHelper itemHelper)
+        public AdminItemController(DbContextSqliteItem context, ItemHelper itemHelper)
         {
             _itemHelper = itemHelper;
             _db = context;

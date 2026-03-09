@@ -18,9 +18,6 @@ namespace EmailAuth.WebApi.Models
         public DateTime AccountStatusExp { get; set; } // New
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public int GameDataId { get; set; }
-        [ForeignKey("GameDataId")]
-        public GameData GameData { get; set; }
 
         // Login/Register Properties
         public string LoginCode { get; set; }
@@ -42,7 +39,6 @@ namespace EmailAuth.WebApi.Models
             LoginCodeExp = DateTime.UtcNow.AddMinutes(15);
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            GameData = new GameData();
         }
     }
 

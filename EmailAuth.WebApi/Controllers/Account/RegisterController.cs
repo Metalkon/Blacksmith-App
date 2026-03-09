@@ -14,10 +14,10 @@ namespace EmailAuth.WebApi.Controllers.Account
     public class RegisterController : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly DbContextSqlServer _db;
+        private readonly DbContextSqliteUser _db;
         private readonly TokenService _tokenService;
 
-        public RegisterController(AuthService authService, DbContextSqlServer db, TokenService tokenService)
+        public RegisterController(AuthService authService, DbContextSqliteUser db, TokenService tokenService)
         {
             _db = db;
             _tokenService = tokenService;

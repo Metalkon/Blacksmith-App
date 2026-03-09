@@ -1,5 +1,4 @@
-﻿@inject PlayerDataService playerData
-@inject CustomAuthStateProvider authStateProvider
+﻿@inject CustomAuthStateProvider authStateProvider
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
@@ -21,14 +20,3 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        var state = await authStateProvider.GetAuthenticationStateAsync();
-        if (state.User.Identity.IsAuthenticated == true)
-        {
-            playerData.UpdatePlayerData();
-        }
-    }
-}

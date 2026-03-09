@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EmailAuth.WebApi.Migrations.DbContextSqliteMigrations
 {
-    [DbContext(typeof(DbContextSqlite))]
+    [DbContext(typeof(DbContextSqliteItem))]
     [Migration("20250626030034_NewDb")]
     partial class NewDb
     {

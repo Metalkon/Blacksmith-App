@@ -15,9 +15,7 @@ namespace EmailAuth.Blazor
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:8001") });
-            builder.Services
-                .AddScoped<HttpClientTokenService>()
-                .AddScoped<PlayerDataService>();
+            builder.Services.AddScoped<HttpClientTokenService>();
 
             builder.Services.AddOidcAuthentication(options =>
             {

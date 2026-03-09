@@ -18,10 +18,10 @@ namespace EmailAuth.WebApi.Controllers
     //[Authorize(Roles = "Admin")]
     public class AdminMaterialController : ControllerBase
     {
-        private readonly DbContextSqlite _db;
+        private readonly DbContextSqliteItem _db;
         private readonly ItemHelper _itemHelper;
 
-        public AdminMaterialController(DbContextSqlite context, ItemHelper itemHelper)
+        public AdminMaterialController(DbContextSqliteItem context, ItemHelper itemHelper)
         {
             _itemHelper = itemHelper;
             _db = context;

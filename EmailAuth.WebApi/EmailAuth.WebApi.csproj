@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\Craft\**" />
+    <Compile Remove="Controllers\Shop\**" />
+    <Content Remove="Controllers\Craft\**" />
+    <Content Remove="Controllers\Shop\**" />
+    <EmbeddedResource Remove="Controllers\Craft\**" />
+    <EmbeddedResource Remove="Controllers\Shop\**" />
+    <None Remove="Controllers\Craft\**" />
+    <None Remove="Controllers\Shop\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
@@ -33,9 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Craft\" />
-    <Folder Include="Controllers\Shop\" />
+    <Folder Include="Controllers\Items\" />
     <Folder Include="Migrations\" />
+    <Folder Include="Migrations\DbContextSqliteUserMigrations\" />
   </ItemGroup>
 
 </Project>

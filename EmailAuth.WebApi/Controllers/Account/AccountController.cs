@@ -13,10 +13,10 @@ namespace EmailAuth.WebApi.Controllers.Account
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly DbContextSqlServer _db;
+        private readonly DbContextSqliteUser _db;
         private readonly TokenService _tokenService;
 
-        public AccountController(DbContextSqlServer context, TokenService tokenService)
+        public AccountController(DbContextSqliteUser context, TokenService tokenService)
         {
             _db = context;
             _tokenService=tokenService;
@@ -86,29 +86,6 @@ namespace EmailAuth.WebApi.Controllers.Account
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");
                 }
-            }
-            return BadRequest();
-        }
-
-        [AllowAnonymous]
-        [HttpGet("PlayerData")]
-        public async Task<ActionResult<string>> PlayerDisplayData()
-        {
-            string userEmail = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            UserModel user = await _db.Users.Include(u => u.GameData).SingleOrDefaultAsync(x => x.Email == userEmail);
-
-            if (user != null)
-            {
-                PlayerDataDTO playerData = new PlayerDataDTO()
-                {
-                    Username = user.Username ?? "N/A",
-                    Level = user.GameData.Level,
-                    Experience = user.GameData.Experience,
-                    Schematics = 1, //Schematics = user.Data.Inventory.Count(x => x.Type == "Schematic"),
-                    Gold = user.GameData.Gold
-                };
-
-                return Ok(playerData);
             }
             return BadRequest();
         }

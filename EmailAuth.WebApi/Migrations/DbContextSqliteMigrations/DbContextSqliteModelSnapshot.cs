@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EmailAuth.WebApi.Migrations.DbContextSqliteMigrations
 {
-    [DbContext(typeof(DbContextSqlite))]
+    [DbContext(typeof(DbContextSqliteItem))]
     partial class DbContextSqliteModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

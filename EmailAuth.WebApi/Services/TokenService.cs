@@ -9,10 +9,10 @@ namespace EmailAuth.WebApi.Services
 {
     public class TokenService
     {
-        private readonly DbContextSqlServer _db;
+        private readonly DbContextSqliteUser _db;
         private IConfiguration _config;
 
-        public TokenService(DbContextSqlServer context, IConfiguration config)
+        public TokenService(DbContextSqliteUser context, IConfiguration config)
         {
             _db = context;
             _config = config;

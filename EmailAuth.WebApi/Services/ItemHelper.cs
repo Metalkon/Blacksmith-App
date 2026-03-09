@@ -1,4 +1,5 @@
 ﻿using EmailAuth.WebApi.Data;
+using EmailAuth.WebApi.Models;
 using EmailAuth.WebApi.Models.Items;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +8,14 @@ using Shared_Classes.Models;
 
 public class ItemHelper
 {
-    private readonly DbContextSqlite _db;
+    private readonly DbContextSqliteItem _db;
 
-    public ItemHelper(DbContextSqlite context)
+    public ItemHelper(DbContextSqliteItem context)
     {
         _db = context;
     }
     
-    public async Task<ItemDTO> MapCraftedItemToItemDTO(ItemCrafted userItem)
+    /*public async Task<ItemDTO> MapCraftedItemToItemDTO(ItemCrafted userItem)
     {
         Item item = await _db.Items.FirstOrDefaultAsync(x => x.Id == userItem.ItemId);
         ItemDTO itemDTO = new ItemDTO()
@@ -49,7 +50,7 @@ public class ItemHelper
         // Add Enchant Info & Calculations (Future)
 
         return itemDTO;
-    }
+    }*/
 
     public async Task<ItemDTO> MapItemToDTO(Item input)
     {

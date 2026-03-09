@@ -1,6 +1,6 @@
 ﻿using Shared_Classes.Models;
 
-namespace EmailAuth.WebApi.Models.Items
+namespace EmailAuth.WebApi.Models
 {
     public class Item
     {
