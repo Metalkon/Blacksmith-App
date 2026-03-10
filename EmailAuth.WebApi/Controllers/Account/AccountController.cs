@@ -2,9 +2,12 @@
 using EmailAuth.WebApi.Models;
 using EmailAuth.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared_Classes.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Security.Claims;
 
 namespace EmailAuth.WebApi.Controllers.Account
@@ -105,11 +108,24 @@ namespace EmailAuth.WebApi.Controllers.Account
             if (guestAdmin != null && guestUser != null)
             {
                 guestAdmin.LoginStatus = LoginStatus.Active;
+                guestAdmin.LoginCode = string.Empty;
                 guestAdmin.LockedCode = string.Empty;
-                guestAdmin.LoginAttempts = 0;                
+                guestAdmin.LoginAttempts = 0;
+                guestAdmin.Role = "Admin";
+                guestAdmin.Validated = true;
+                guestAdmin.AccountStatusExp = DateTime.UtcNow;
+                guestAdmin.LoginCode = string.Empty;
+                guestAdmin.LoginCodeExp = DateTime.UtcNow;
+
                 guestUser.LoginStatus = LoginStatus.Active;
+                guestUser.LoginCode = string.Empty;
                 guestUser.LockedCode = string.Empty;
                 guestUser.LoginAttempts = 0;
+                guestUser.Role = "Admin";
+                guestUser.Validated = true;
+                guestUser.AccountStatusExp = DateTime.UtcNow;
+                guestUser.LoginCode = string.Empty;
+                guestUser.LoginCodeExp = DateTime.UtcNow;
 
                 await _db.SaveChangesAsync();
                 return Ok(new AuthResponse 
