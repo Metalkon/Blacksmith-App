@@ -27,7 +27,7 @@ namespace EmailAuth.WebApi.Controllers.Account
         // Handle user registration and send confirmation email
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register(UserDTO registerRequest)
+        public async Task<ActionResult<AuthResponse>> Register(UserDTO registerRequest)
         {
             try
             {
@@ -82,7 +82,10 @@ namespace EmailAuth.WebApi.Controllers.Account
 
                 await _db.SaveChangesAsync();
 
-                return Ok(sendEmail.message);
+                return Ok(new AuthResponse
+                {
+                    Message = sendEmail.message
+                });
             }
             catch (Exception ex)
             {

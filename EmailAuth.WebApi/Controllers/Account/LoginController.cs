@@ -25,7 +25,7 @@ namespace EmailAuth.WebApi.Controllers.Account
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDTO loginRequest)
+        public async Task<ActionResult<AuthResponse>> Login(UserDTO loginRequest)
         {
             try
             {
@@ -65,13 +65,27 @@ namespace EmailAuth.WebApi.Controllers.Account
                 user.LoginStatus = LoginStatus.Awaiting;
                 user.LoginAttempts++;
 
-                var sendEmail = await _authService.SendEmailLogin(user);
-                if (sendEmail.statusCode != 200)
-                    return StatusCode(sendEmail.statusCode, sendEmail.message);
-
-                await _db.SaveChangesAsync();
-
-                return Ok(sendEmail.message);
+                // Check For Guest Accounts (Demo Purposes Only), behave normally if not a guest.
+                if((user.Id == 2 && user.Username == "Guest_User") || (user.Id == 1 && user.Username == "Guest_Admin"))
+                {
+                    var sendEmailGuest = await _authService.SendEmailLoginGuest(user);
+                    await _db.SaveChangesAsync();
+                    return Ok(new AuthResponse
+                    {
+                        Message = sendEmailGuest.message,
+                        Subject = sendEmailGuest.subject,
+                        Contents = sendEmailGuest.contents
+                    });
+                }
+                else
+                {
+                    var sendEmail = await _authService.SendEmailLogin(user);
+                    await _db.SaveChangesAsync();
+                    return Ok(new AuthResponse
+                    {
+                        Message = sendEmail.message
+                    });
+                }
             }
             catch (Exception ex)
             {

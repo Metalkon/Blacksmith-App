@@ -81,11 +81,41 @@ namespace EmailAuth.WebApi.Controllers.Account
                 if (user.LoginStatus == LoginStatus.Locked && user.LockedCode == userConfirm.Code)
                 {
                     user.LoginStatus = LoginStatus.Active;
-                    user.LockedCode = null;
+                    user.LockedCode = string.Empty;
                     user.LoginAttempts = 0;
                     await _db.SaveChangesAsync();
                     return Ok("Your Email has been unlocked");
                 }
+            }
+            return BadRequest();
+        }
+
+        // Reset Guest Status
+        [AllowAnonymous]
+        [HttpPost("resetguest")]
+        public async Task<ActionResult<AuthResponse>> ResetGuests()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid Request");
+            }
+            UserModel guestAdmin = await _db.Users.SingleOrDefaultAsync(x => x.Id == 1 && x.Username == "Guest_Admin");
+            UserModel guestUser = await _db.Users.SingleOrDefaultAsync(x => x.Id == 2 && x.Username == "Guest_User");
+
+            if (guestAdmin != null && guestUser != null)
+            {
+                guestAdmin.LoginStatus = LoginStatus.Active;
+                guestAdmin.LockedCode = string.Empty;
+                guestAdmin.LoginAttempts = 0;                
+                guestUser.LoginStatus = LoginStatus.Active;
+                guestUser.LockedCode = string.Empty;
+                guestUser.LoginAttempts = 0;
+
+                await _db.SaveChangesAsync();
+                return Ok(new AuthResponse 
+                {
+                    Message = "Guest Accounts Have Been Reset"
+                });
             }
             return BadRequest();
         }
