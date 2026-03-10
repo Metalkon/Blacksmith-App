@@ -5,22 +5,22 @@
 
 <AuthorizeView>
     <Authorized>
-        <div style="text-align: center;">
-            <a href="Account" style="color: white; font-weight: bold;">Account</a>
-            <span style="color: white; font-weight: bold;"> | </span>
-            <a href="" style="color: white; font-weight: bold;" @onclick="Logout">Logout</a>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 6px 0;">
+            <SmallButtonComponent Text="Account" OnClick="@(() => Navigation.NavigateTo("Account"))" />
+                <span class="login-display-sep">|</span>
+            <SmallButtonComponent Text="Logout" OnClick="Logout" />
         </div>
     </Authorized>
     <NotAuthorized>
-        <div style="text-align: center;">
-            <a href="login" style="color: white; font-weight: bold;">Login</a>
-            <span style="color: white; font-weight: bold;"> | </span>
-            <a href="register" style="color: white; font-weight: bold;">Register</a>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 6px 0;">
+            <SmallButtonComponent Text="Login" OnClick="@(() => Navigation.NavigateTo("Login"))" />
+            <span class="login-display-sep">|</span>
+            <SmallButtonComponent Text="Register" OnClick="@(() => Navigation.NavigateTo("Register"))" />
         </div>
     </NotAuthorized>
 </AuthorizeView>
 
-@code{
+@code {
     async Task Logout()
     {
         await LocalStorage.RemoveItemAsync("token");

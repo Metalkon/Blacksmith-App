@@ -1,0 +1,31 @@
+.login-display-btn {
+    display: inline-block;
+    width: 100px;
+    padding: 5px 0;
+    text-align: center;
+    color: rgba(255,255,255,0.85);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+    .login-display-btn:hover {
+        background: rgba(255,255,255,0.12);
+        border-color: rgba(255,255,255,0.55);
+        color: white;
+        text-decoration: none;
+    }
+
+.login-display-sep {
+    color: rgba(255,255,255,0.3);
+    font-weight: 300;
+    font-size: 0.9rem;
+    user-select: none;
+}
