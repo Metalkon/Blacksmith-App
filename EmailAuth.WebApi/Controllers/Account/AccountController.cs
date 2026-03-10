@@ -121,7 +121,7 @@ namespace EmailAuth.WebApi.Controllers.Account
                 guestUser.LoginCode = string.Empty;
                 guestUser.LockedCode = string.Empty;
                 guestUser.LoginAttempts = 0;
-                guestUser.Role = "Admin";
+                guestUser.Role = "User";
                 guestUser.Validated = true;
                 guestUser.AccountStatusExp = DateTime.UtcNow;
                 guestUser.LoginCode = string.Empty;
