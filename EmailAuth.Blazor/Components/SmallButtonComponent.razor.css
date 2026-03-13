@@ -8,20 +8,23 @@
     text-transform: uppercase;
     border: 1px solid rgba(255,255,255,0.25);
     border-radius: 4px;
-    background: transparent;
+    background: #2a2a2a;
     cursor: pointer;
     transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
     .login-display-btn:hover {
-        background: rgba(255,255,255,0.12);
-        border-color: rgba(255,255,255,0.55);
+        background: #333333;
+        border-color: rgba(255, 255, 255, 0.55);
         color: white;
     }
 
 .login-display-sep {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255, 255, 255, 0.3);
     font-weight: 300;
-    font-size: 0.9rem;
+    font-size: 1rem;
     user-select: none;
 }
+
+
+
