@@ -20,7 +20,7 @@ namespace EmailAuth.Blazor.Services
             _httpClient = httpClient;
             _localStorage = localStorage;
             _authStateProvider = authStateProvider;
-            _navigationManager = navigationManager; 
+            _navigationManager = navigationManager;
         }
 
         public async Task TestRequest()
@@ -41,7 +41,7 @@ namespace EmailAuth.Blazor.Services
             catch (Exception ex)
             {
                 await ErrorRedirect(ex.Message);
-                throw new Exception($"ERROR: {ex.Message}");
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
 
@@ -57,8 +57,7 @@ namespace EmailAuth.Blazor.Services
             catch (Exception ex)
             {
                 await ErrorRedirect(ex.Message);
-                throw new Exception($"ERROR: {ex.Message}");
-
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
 
@@ -74,7 +73,7 @@ namespace EmailAuth.Blazor.Services
             catch (Exception ex)
             {
                 await ErrorRedirect(ex.Message);
-                throw new Exception($"ERROR: {ex.Message}");
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
 
@@ -90,7 +89,7 @@ namespace EmailAuth.Blazor.Services
             catch (Exception ex)
             {
                 await ErrorRedirect(ex.Message);
-                throw new Exception($"ERROR: {ex.Message}");
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             }
         }
 
@@ -98,15 +97,20 @@ namespace EmailAuth.Blazor.Services
         private async Task CheckStatus(HttpResponseMessage httpResponse)
         {
             if (httpResponse.IsSuccessStatusCode || httpResponse.StatusCode == HttpStatusCode.NotFound)
-            {
                 return;
-            }
+
+            string error;
+            if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                error = "You must be logged in to access this page.";
+            else if (httpResponse.StatusCode == HttpStatusCode.Forbidden)
+                error = "You do not have permission to access this page.";
             else
-            {
-                string error = await httpResponse.Content.ReadAsStringAsync();
-                await ErrorRedirect(error);
-                throw new Exception($"ERROR: {error}");
-            }
+                error = await httpResponse.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(error))
+                error = $"Request failed: {(int)httpResponse.StatusCode} {httpResponse.ReasonPhrase}";
+
+            await ErrorRedirect(error);
         }
 
         // Redirect to error page
